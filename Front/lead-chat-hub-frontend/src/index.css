@@ -1,0 +1,96 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* WhatsApp-inspired CRM palette */
+    --background: 200 18% 96%;
+    --foreground: 200 15% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 200 15% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 200 15% 15%;
+
+    --primary: 158 64% 32%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 158 70% 42%;
+
+    --secondary: 200 20% 92%;
+    --secondary-foreground: 200 15% 20%;
+
+    --muted: 200 15% 94%;
+    --muted-foreground: 200 10% 45%;
+
+    --accent: 158 50% 92%;
+    --accent-foreground: 158 64% 22%;
+
+    --destructive: 0 75% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 65% 42%;
+    --warning: 38 92% 50%;
+    --info: 210 90% 55%;
+
+    --border: 200 15% 88%;
+    --input: 200 15% 88%;
+    --ring: 158 64% 32%;
+
+    --radius: 0.75rem;
+
+    /* Chat-specific */
+    --chat-bg: 60 25% 95%;
+    --chat-bubble-out: 158 55% 88%;
+    --chat-bubble-in: 0 0% 100%;
+    --sidebar-header: 158 25% 22%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(158 64% 32%), hsl(158 70% 42%));
+    --shadow-bubble: 0 1px 2px hsl(200 15% 15% / 0.08);
+    --shadow-panel: 0 2px 12px hsl(200 15% 15% / 0.06);
+  }
+
+  .dark {
+    --background: 200 15% 10%;
+    --foreground: 200 10% 92%;
+    --card: 200 15% 14%;
+    --card-foreground: 200 10% 92%;
+    --popover: 200 15% 14%;
+    --popover-foreground: 200 10% 92%;
+    --primary: 158 60% 42%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 200 15% 18%;
+    --secondary-foreground: 200 10% 92%;
+    --muted: 200 15% 18%;
+    --muted-foreground: 200 10% 60%;
+    --accent: 158 30% 22%;
+    --accent-foreground: 158 60% 80%;
+    --destructive: 0 65% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 200 15% 22%;
+    --input: 200 15% 22%;
+    --ring: 158 60% 42%;
+    --chat-bg: 200 15% 8%;
+    --chat-bubble-out: 158 35% 25%;
+    --chat-bubble-in: 200 15% 16%;
+  }
+}
+
+@layer base {
+  * { @apply border-border; }
+  body { @apply bg-background text-foreground; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+}
+
+@layer utilities {
+  .chat-bg-pattern {
+    background-color: hsl(var(--chat-bg));
+    background-image:
+      radial-gradient(hsl(var(--foreground) / 0.03) 1px, transparent 1px),
+      radial-gradient(hsl(var(--foreground) / 0.03) 1px, transparent 1px);
+    background-size: 24px 24px;
+    background-position: 0 0, 12px 12px;
+  }
+  .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+  .scrollbar-thin::-webkit-scrollbar-thumb { background: hsl(var(--muted-foreground) / 0.3); border-radius: 3px; }
+}

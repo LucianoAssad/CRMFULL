@@ -1,0 +1,34 @@
+/home/ubuntu/lead-chat-hub-backend/LeadChatHub.Application/obj/Debug/net8.0/LeadChatHub.Application.csproj.AssemblyReference.cache
+/home/ubuntu/lead-chat-hub-backend/LeadChatHub.Application/obj/Debug/net8.0/LeadChatHub.Application.GeneratedMSBuildEditorConfig.editorconfig
+/home/ubuntu/lead-chat-hub-backend/LeadChatHub.Application/obj/Debug/net8.0/LeadChatHub.Application.AssemblyInfoInputs.cache
+/home/ubuntu/lead-chat-hub-backend/LeadChatHub.Application/obj/Debug/net8.0/LeadChatHub.Application.AssemblyInfo.cs
+/home/ubuntu/lead-chat-hub-backend/LeadChatHub.Application/obj/Debug/net8.0/LeadChatHub.Application.csproj.CoreCompileInputs.cache
+/home/ubuntu/lead-chat-hub-backend/LeadChatHub.Application/bin/Debug/net8.0/LeadChatHub.Application.deps.json
+/home/ubuntu/lead-chat-hub-backend/LeadChatHub.Application/bin/Debug/net8.0/LeadChatHub.Application.dll
+/home/ubuntu/lead-chat-hub-backend/LeadChatHub.Application/bin/Debug/net8.0/LeadChatHub.Application.pdb
+/home/ubuntu/lead-chat-hub-backend/LeadChatHub.Application/bin/Debug/net8.0/LeadChatHub.Core.dll
+/home/ubuntu/lead-chat-hub-backend/LeadChatHub.Application/bin/Debug/net8.0/LeadChatHub.Infrastructure.dll
+/home/ubuntu/lead-chat-hub-backend/LeadChatHub.Application/bin/Debug/net8.0/LeadChatHub.Core.pdb
+/home/ubuntu/lead-chat-hub-backend/LeadChatHub.Application/bin/Debug/net8.0/LeadChatHub.Infrastructure.pdb
+/home/ubuntu/lead-chat-hub-backend/LeadChatHub.Application/obj/Debug/net8.0/LeadChat.D9516BFF.Up2Date
+/home/ubuntu/lead-chat-hub-backend/LeadChatHub.Application/obj/Debug/net8.0/LeadChatHub.Application.dll
+/home/ubuntu/lead-chat-hub-backend/LeadChatHub.Application/obj/Debug/net8.0/refint/LeadChatHub.Application.dll
+/home/ubuntu/lead-chat-hub-backend/LeadChatHub.Application/obj/Debug/net8.0/LeadChatHub.Application.pdb
+/home/ubuntu/lead-chat-hub-backend/LeadChatHub.Application/obj/Debug/net8.0/ref/LeadChatHub.Application.dll
+C:\Users\lucia\OneDrive\Área de Trabalho\Projetos\CRM\Back\lead-chat-hub-backend\LeadChatHub.Application\bin\Debug\net8.0\LeadChatHub.Application.deps.json
+C:\Users\lucia\OneDrive\Área de Trabalho\Projetos\CRM\Back\lead-chat-hub-backend\LeadChatHub.Application\bin\Debug\net8.0\LeadChatHub.Application.dll
+C:\Users\lucia\OneDrive\Área de Trabalho\Projetos\CRM\Back\lead-chat-hub-backend\LeadChatHub.Application\bin\Debug\net8.0\LeadChatHub.Application.pdb
+C:\Users\lucia\OneDrive\Área de Trabalho\Projetos\CRM\Back\lead-chat-hub-backend\LeadChatHub.Application\bin\Debug\net8.0\LeadChatHub.Core.dll
+C:\Users\lucia\OneDrive\Área de Trabalho\Projetos\CRM\Back\lead-chat-hub-backend\LeadChatHub.Application\bin\Debug\net8.0\LeadChatHub.Infrastructure.dll
+C:\Users\lucia\OneDrive\Área de Trabalho\Projetos\CRM\Back\lead-chat-hub-backend\LeadChatHub.Application\bin\Debug\net8.0\LeadChatHub.Core.pdb
+C:\Users\lucia\OneDrive\Área de Trabalho\Projetos\CRM\Back\lead-chat-hub-backend\LeadChatHub.Application\bin\Debug\net8.0\LeadChatHub.Infrastructure.pdb
+C:\Users\lucia\OneDrive\Área de Trabalho\Projetos\CRM\Back\lead-chat-hub-backend\LeadChatHub.Application\obj\Debug\net8.0\LeadChatHub.Application.csproj.AssemblyReference.cache
+C:\Users\lucia\OneDrive\Área de Trabalho\Projetos\CRM\Back\lead-chat-hub-backend\LeadChatHub.Application\obj\Debug\net8.0\LeadChatHub.Application.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\lucia\OneDrive\Área de Trabalho\Projetos\CRM\Back\lead-chat-hub-backend\LeadChatHub.Application\obj\Debug\net8.0\LeadChatHub.Application.AssemblyInfoInputs.cache
+C:\Users\lucia\OneDrive\Área de Trabalho\Projetos\CRM\Back\lead-chat-hub-backend\LeadChatHub.Application\obj\Debug\net8.0\LeadChatHub.Application.AssemblyInfo.cs
+C:\Users\lucia\OneDrive\Área de Trabalho\Projetos\CRM\Back\lead-chat-hub-backend\LeadChatHub.Application\obj\Debug\net8.0\LeadChatHub.Application.csproj.CoreCompileInputs.cache
+C:\Users\lucia\OneDrive\Área de Trabalho\Projetos\CRM\Back\lead-chat-hub-backend\LeadChatHub.Application\obj\Debug\net8.0\LeadChat.D9516BFF.Up2Date
+C:\Users\lucia\OneDrive\Área de Trabalho\Projetos\CRM\Back\lead-chat-hub-backend\LeadChatHub.Application\obj\Debug\net8.0\LeadChatHub.Application.dll
+C:\Users\lucia\OneDrive\Área de Trabalho\Projetos\CRM\Back\lead-chat-hub-backend\LeadChatHub.Application\obj\Debug\net8.0\refint\LeadChatHub.Application.dll
+C:\Users\lucia\OneDrive\Área de Trabalho\Projetos\CRM\Back\lead-chat-hub-backend\LeadChatHub.Application\obj\Debug\net8.0\LeadChatHub.Application.pdb
+C:\Users\lucia\OneDrive\Área de Trabalho\Projetos\CRM\Back\lead-chat-hub-backend\LeadChatHub.Application\obj\Debug\net8.0\ref\LeadChatHub.Application.dll
