@@ -6,9 +6,9 @@ RUN npm ci
 COPY . .
 RUN node node_modules/vite/bin/vite.js build
 
-FROM node:20-alpine
-WORKDIR /app
-RUN npm install -g serve@13
-COPY --from=build /app/dist ./dist
-EXPOSE 3000
-CMD ["sh", "-c", "serve -s dist -p ${PORT:-3000}"]
+FROM nginx:alpine
+COPY --from=build /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/templates/default.conf.template
+EXPOSE 80
+ENV PORT=80
+CMD ["nginx", "-g", "daemon off;"]
