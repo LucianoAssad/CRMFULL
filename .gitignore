@@ -1,0 +1,6 @@
+**/obj/
+**/bin/
+*.zip
+.env
+node_modules/
+dist/
