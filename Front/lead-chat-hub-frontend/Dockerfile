@@ -8,7 +8,7 @@ RUN node node_modules/vite/bin/vite.js build
 
 FROM node:20-alpine
 WORKDIR /app
-RUN npm install -g serve
+RUN npm install -g serve@13
 COPY --from=build /app/dist ./dist
 EXPOSE 3000
 CMD ["sh", "-c", "serve -s dist -p ${PORT:-3000}"]
