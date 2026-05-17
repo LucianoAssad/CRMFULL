@@ -55,7 +55,16 @@ export function ActiveAccountProvider({ children }: { children: ReactNode }) {
       .from("empresas")
       .select("id, nome, tipo_conta, conta_gerente_id, ativo, codigo_publico")
       .order("nome");
-    setContas((data as any) || []);
+    // Normalize camelCase API fields (tipoConta → tipo_conta etc.)
+    const normalized: ContaResumo[] = ((data as any) || []).map((e: any) => ({
+      id: e.id,
+      nome: e.nome ?? "",
+      tipo_conta: (e.tipo_conta ?? e.tipoConta ?? "filha") as "gerente" | "filha",
+      conta_gerente_id: e.conta_gerente_id ?? e.contaGerenteId ?? null,
+      ativo: e.ativo ?? true,
+      codigo_publico: e.codigo_publico ?? e.codigoPublico ?? null,
+    }));
+    setContas(normalized);
     setLoading(false);
   }, []);
 
