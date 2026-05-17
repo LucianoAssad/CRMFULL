@@ -125,6 +125,20 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
 
+// Manual CORS — garante headers em todas as respostas
+app.Use(async (context, next) =>
+{
+    context.Response.Headers["Access-Control-Allow-Origin"] = "*";
+    context.Response.Headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, PATCH, DELETE, OPTIONS";
+    context.Response.Headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization";
+    if (context.Request.Method == "OPTIONS")
+    {
+        context.Response.StatusCode = 204;
+        return;
+    }
+    await next();
+});
+
 app.UseCors();
 
 // Serve uploaded files
