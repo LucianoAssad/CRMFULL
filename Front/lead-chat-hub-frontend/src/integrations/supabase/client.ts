@@ -37,9 +37,12 @@ api.interceptors.response.use(
           error.config.headers.Authorization = `Bearer ${data.accessToken}`;
           return api(error.config);
         } catch {
+          // Refresh failed — clear tokens and notify React to clear session.
+          // Do NOT hard-redirect (window.location.href) to avoid blank flash.
           localStorage.removeItem("access_token");
           localStorage.removeItem("refresh_token");
-          window.location.href = "/login";
+          localStorage.removeItem("active_conta_id");
+          window.dispatchEvent(new CustomEvent("auth:session-expired"));
         }
       }
     }

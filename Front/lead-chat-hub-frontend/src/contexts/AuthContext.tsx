@@ -36,7 +36,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(data.session);
       setLoading(false);
     });
-    return () => sub.subscription.unsubscribe();
+
+    // Listen for session expiry dispatched by the axios interceptor
+    const onExpired = () => {
+      setSession(null);
+      setLoading(false);
+    };
+    window.addEventListener("auth:session-expired", onExpired);
+
+    return () => {
+      sub.subscription.unsubscribe();
+      window.removeEventListener("auth:session-expired", onExpired);
+    };
   }, []);
 
   // Map auth.user.email -> usuarios.id

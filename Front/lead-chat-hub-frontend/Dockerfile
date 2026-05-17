@@ -5,7 +5,7 @@ ARG VITE_API_URL
 ENV VITE_API_URL=$VITE_API_URL
 COPY package*.json ./
 RUN npm ci
-ARG CACHEBUST=3
+ARG CACHEBUST=4
 COPY . .
 RUN node node_modules/vite/bin/vite.js build
 

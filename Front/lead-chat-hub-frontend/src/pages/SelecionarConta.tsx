@@ -18,7 +18,7 @@ export default function SelecionarConta() {
 
   useEffect(() => {
     (async () => {
-      if (!user?.email) return;
+      if (!user?.email) { setLoading(false); return; }
       const { data: usuario } = await supabase.from("usuarios").select("id").eq("email", user.email).maybeSingle();
       if (!usuario) { setLoading(false); return; }
       const lista = await fetchAccessibleAccounts(usuario.id);
