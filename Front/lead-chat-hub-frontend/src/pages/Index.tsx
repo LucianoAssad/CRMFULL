@@ -38,20 +38,69 @@ export default function Index() {
     setCanalContas(map);
   };
 
+  const normalizeConversa = (c: any): Conversa => ({
+    id: c.id,
+    empresa_id: c.empresa_id ?? c.empresaId ?? "",
+    lead_id: c.lead_id ?? c.leadId ?? "",
+    canal_id: c.canal_id ?? c.canalId ?? null,
+    status: c.status ?? "aberta",
+    ultima_mensagem: c.ultima_mensagem ?? c.ultimaMensagem ?? null,
+    ultima_mensagem_em: c.ultima_mensagem_em ?? c.ultimaMensagemEm ?? null,
+    nao_lidas: c.nao_lidas ?? c.naoLidas ?? 0,
+    conta_filha_pendente: c.conta_filha_pendente ?? c.contaFilhaPendente ?? false,
+    lead: c.lead ?? undefined,
+    canal: c.canal ?? undefined,
+  });
+
+  const normalizeLead = (l: any): Lead => ({
+    id: l.id,
+    empresa_id: l.empresa_id ?? l.empresaId ?? "",
+    nome: l.nome ?? "",
+    telefone: l.telefone ?? null,
+    email: l.email ?? null,
+    avatar_url: l.avatar_url ?? l.avatarUrl ?? null,
+    status: l.status ?? "novo",
+    origem: l.origem ?? null,
+    tags: l.tags ?? null,
+    notas: l.notas ?? null,
+    valor_estimado: l.valor_estimado ?? l.valorEstimado ?? null,
+    convertido_em: l.convertido_em ?? l.convertidoEm ?? null,
+    created_at: l.created_at ?? l.createdAt ?? "",
+    score: l.score ?? 0,
+    utm_campaign: l.utm_campaign ?? l.utmCampaign ?? null,
+  });
+
   const loadConversas = async () => {
-    let q = supabase
-      .from("conversas")
-      .select("*, lead:leads(*), canal:canais_conectados(*)")
-      .order("ultima_mensagem_em", { ascending: false });
-    if (scopedContaIds.length > 0) q = q.in("empresa_id", scopedContaIds);
+    if (scopedContaIds.length === 0) { setConversas([]); return; }
+
+    // Fetch conversas
+    let q = supabase.from("conversas").select("*").order("ultima_mensagem_em", { ascending: false });
+    q = q.in("empresa_id", scopedContaIds);
     const { data, error } = await q;
     if (error) toast.error(error.message);
-    const list = ((data as any) || []).sort((a: any, b: any) => {
+
+    const raw: any[] = data || [];
+
+    // Fetch leads for these conversas
+    const leadIds = [...new Set(raw.map((c: any) => c.lead_id ?? c.leadId).filter(Boolean))];
+    let leadsMap: Record<string, Lead> = {};
+    if (leadIds.length > 0) {
+      const { data: leadsData } = await supabase.from("leads").select("*").in("id", leadIds);
+      for (const l of leadsData || []) leadsMap[l.id] = normalizeLead(l);
+    }
+
+    const list: Conversa[] = raw.map((c: any) => {
+      const conv = normalizeConversa(c);
+      const lid = conv.lead_id;
+      conv.lead = leadsMap[lid];
+      return conv;
+    }).sort((a, b) => {
       const ap = a.conta_filha_pendente ? 1 : 0;
       const bp = b.conta_filha_pendente ? 1 : 0;
       if (ap !== bp) return bp - ap;
       return (b.lead?.score ?? 0) - (a.lead?.score ?? 0);
     });
+
     setConversas(list);
   };
 
@@ -76,7 +125,16 @@ export default function Index() {
       .eq("conversa_id", convId)
       .order("created_at", { ascending: true });
     if (error) toast.error(error.message);
-    setMensagens((data as any) || []);
+    const msgs: Mensagem[] = ((data as any) || []).map((m: any) => ({
+      id: m.id,
+      conversa_id: m.conversa_id ?? m.conversaId ?? "",
+      direcao: m.direcao ?? "inbound",
+      conteudo: m.conteudo ?? "",
+      autor: m.autor ?? null,
+      lida: m.lida ?? false,
+      created_at: m.created_at ?? m.createdAt ?? "",
+    }));
+    setMensagens(msgs);
   };
 
   const openConversa = async (c: Conversa) => {
