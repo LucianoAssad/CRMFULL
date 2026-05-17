@@ -49,8 +49,22 @@ export async function fetchAccessibleAccounts(usuarioId: string): Promise<Access
       .eq("status", "ativo"),
   ]);
 
-  const empresas = (empresasRes.data ?? []) as EmpresaRow[];
-  const vinculos = (vinculosRes.data ?? []) as { conta_id: string; role: Role }[];
+  // Normalize API response: backend may return camelCase (tipoConta) or
+  // snake_case (tipo_conta) depending on [JsonPropertyName] attributes.
+  const empresas: EmpresaRow[] = (empresasRes.data ?? []).map((e: any) => ({
+    id: e.id,
+    nome: e.nome ?? "",
+    tipo_conta: (e.tipo_conta ?? e.tipoConta ?? "filha") as "gerente" | "filha",
+    conta_gerente_id: e.conta_gerente_id ?? e.contaGerenteId ?? null,
+    codigo_publico: e.codigo_publico ?? e.codigoPublico ?? null,
+    ativo: e.ativo ?? true,
+  }));
+
+  const vinculos: { conta_id: string; role: Role }[] = (vinculosRes.data ?? []).map((v: any) => ({
+    conta_id: v.conta_id ?? v.contaId ?? "",
+    role: v.role as Role,
+    ativo: v.ativo,
+  }));
 
   // Super Admin: acesso global a todas as contas (independente de usuarios_contas).
   const isSuperAdmin = vinculos.some((v) => v.role === "super_admin");
