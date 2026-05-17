@@ -538,20 +538,14 @@ export const supabase = {
     }
   },
 
-  // Realtime channel (now using SignalR)
-  channel: (name: string) => ({
-    on: (
-      event: string,
-      filter: any,
-      callback: (payload: any) => void
-    ) => ({
-      subscribe: () => {
-        // SignalR connection is managed separately
-        return { unsubscribe: () => {} };
-      },
-    }),
-    subscribe: () => ({ unsubscribe: () => {} }),
-  }),
+  // Realtime channel stub — supports method chaining (.on().on().subscribe())
+  channel: (_name: string) => {
+    const ch = {
+      on: (_event: string, _filter: any, _callback: (payload: any) => void) => ch,
+      subscribe: () => ({ unsubscribe: () => {} }),
+    };
+    return ch;
+  },
 
-  removeChannel: (channel: any) => {},
+  removeChannel: (_channel: any) => {},
 };
