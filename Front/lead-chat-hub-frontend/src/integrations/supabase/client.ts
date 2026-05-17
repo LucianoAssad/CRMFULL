@@ -108,14 +108,18 @@ class QueryBuilder {
   private _limit: number = 100;
   private _single: boolean = false;
   private _maybeSingle: boolean = false;
+  private _returnCount: boolean = false;
+  private _headOnly: boolean = false;
 
   constructor(table: string) {
     this.table = table;
     this.route = getRoute(table);
   }
 
-  select(columns: string = "*") {
+  select(columns: string = "*", opts?: { count?: string; head?: boolean }) {
     this._select = columns;
+    if (opts?.count === "exact") this._returnCount = true;
+    if (opts?.head === true) this._headOnly = true;
     return this;
   }
 
@@ -136,6 +140,16 @@ class QueryBuilder {
 
   or(expression: string) {
     this.filters["_or"] = expression;
+    return this;
+  }
+
+  gte(column: string, value: any) {
+    this.filters[`${column}__gte`] = value;
+    return this;
+  }
+
+  lte(column: string, value: any) {
+    this.filters[`${column}__lte`] = value;
     return this;
   }
 
@@ -207,6 +221,18 @@ class QueryBuilder {
           const col = key.replace("__in", "");
           const vals = String(value).split(",");
           result = result.filter((r: any) => vals.includes(String(resolveVal(r, col))));
+        } else if (key.includes("__gte")) {
+          const col = key.replace("__gte", "");
+          result = result.filter((r: any) => {
+            const v = resolveVal(r, col);
+            return v !== undefined && String(v) >= String(value);
+          });
+        } else if (key.includes("__lte")) {
+          const col = key.replace("__lte", "");
+          result = result.filter((r: any) => {
+            const v = resolveVal(r, col);
+            return v !== undefined && String(v) <= String(value);
+          });
         } else {
           result = result.filter(
             (r: any) => String(resolveVal(r, key)) === String(value)
@@ -225,11 +251,17 @@ class QueryBuilder {
         });
       }
 
+      const count = this._returnCount ? result.length : undefined;
+
       if (this._single || this._maybeSingle) {
-        return { data: result[0] || null, error: null };
+        return { data: result[0] || null, count, error: null };
       }
 
-      return { data: result, error: null };
+      if (this._headOnly) {
+        return { data: null, count, error: null };
+      }
+
+      return { data: result, count, error: null };
     } catch (error: any) {
       return { data: null, error: error.response?.data || error.message };
     }
