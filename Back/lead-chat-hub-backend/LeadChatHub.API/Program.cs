@@ -169,20 +169,26 @@ using (var scope = app.Services.CreateScope())
     {
         db.Database.EnsureCreated();
 
-        // Garantir vínculo do admin manual com Empresa Principal
-        var adminManualId = Guid.Parse("a020e064-cd5e-491e-be54-e23c84249879");
-        var empresaPrincipalId = Guid.Parse("105db3e1-3050-47b6-8877-4b9830b2e248");
-        if (!db.UsuariosContas.Any(uc => uc.UsuarioId == adminManualId && uc.ContaId == empresaPrincipalId))
+        // Garantir que todo usuário com Role=super_admin tenha vínculo em pelo menos uma empresa ativa
+        var superAdmins = db.Usuarios.Where(u => u.Role == "super_admin" && u.Ativo).ToList();
+        var primeiraEmpresa = db.Empresas.OrderBy(e => e.CreatedAt).FirstOrDefault();
+        if (primeiraEmpresa != null)
         {
-            db.UsuariosContas.Add(new LeadChatHub.Core.Entities.UsuarioConta
+            foreach (var sa in superAdmins)
             {
-                UsuarioId = adminManualId,
-                ContaId = empresaPrincipalId,
-                Role = "super_admin",
-                Ativo = true
-            });
+                if (!db.UsuariosContas.Any(uc => uc.UsuarioId == sa.Id))
+                {
+                    db.UsuariosContas.Add(new LeadChatHub.Core.Entities.UsuarioConta
+                    {
+                        UsuarioId = sa.Id,
+                        ContaId = primeiraEmpresa.Id,
+                        Role = "super_admin",
+                        Ativo = true
+                    });
+                    Console.WriteLine($"Seed: vínculo super_admin {sa.Email} -> {primeiraEmpresa.Nome} criado");
+                }
+            }
             db.SaveChanges();
-            Console.WriteLine("Seed: vínculo admin -> Empresa Principal criado");
         }
 
         if (!db.Empresas.Any())
