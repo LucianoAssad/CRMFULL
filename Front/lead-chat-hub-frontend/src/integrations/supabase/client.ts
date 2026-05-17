@@ -285,6 +285,37 @@ class QueryBuilder {
   }
 }
 
+// ===== JWT decode (no API call needed) =====
+function decodeJwtPayload(token: string): Record<string, any> | null {
+  try {
+    const part = token.split(".")[1];
+    const json = atob(part.replace(/-/g, "+").replace(/_/g, "/"));
+    return JSON.parse(json);
+  } catch {
+    return null;
+  }
+}
+
+// Microsoft claim URIs used by .NET
+const CLAIM_ID   = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier";
+const CLAIM_EMAIL = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress";
+const CLAIM_NAME  = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name";
+
+function sessionFromToken(token: string) {
+  const p = decodeJwtPayload(token);
+  if (!p) return null;
+  // Check expiry
+  if (p.exp && p.exp * 1000 < Date.now()) return null;
+  return {
+    access_token: token,
+    user: {
+      id:    p[CLAIM_ID]    ?? p.sub ?? "",
+      email: p[CLAIM_EMAIL] ?? p.email ?? "",
+      user_metadata: { nome: p[CLAIM_NAME] ?? p.name ?? "" },
+    },
+  };
+}
+
 /**
  * Supabase-compatible client object.
  * Maintains the same API surface: supabase.from("table").select().eq()
@@ -349,45 +380,22 @@ export const supabase = {
     getSession: async () => {
       const token = localStorage.getItem("access_token");
       if (!token) return { data: { session: null }, error: null };
-      try {
-        const { data } = await api.get("/auth/me");
-        return {
-          data: {
-            session: {
-              access_token: token,
-              user: {
-                id: data.id,
-                email: data.email,
-                user_metadata: { nome: data.nome },
-              },
-            },
-          },
-          error: null,
-        };
-      } catch {
+      const session = sessionFromToken(token);
+      if (!session) {
+        // Token expired — clear it
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
         return { data: { session: null }, error: null };
       }
+      return { data: { session }, error: null };
     },
 
     onAuthStateChange: (callback: (event: string, session: any) => void) => {
-      // Check initial state
+      // Check initial state by decoding the stored token — no API call needed
       const token = localStorage.getItem("access_token");
-      if (token) {
-        api
-          .get("/auth/me")
-          .then(({ data }) => {
-            callback("SIGNED_IN", {
-              access_token: token,
-              user: {
-                id: data.id,
-                email: data.email,
-                user_metadata: { nome: data.nome },
-              },
-            });
-          })
-          .catch(() => {
-            callback("SIGNED_OUT", null);
-          });
+      const session = token ? sessionFromToken(token) : null;
+      if (session) {
+        setTimeout(() => callback("SIGNED_IN", session), 0);
       } else {
         setTimeout(() => callback("SIGNED_OUT", null), 0);
       }
@@ -396,7 +404,8 @@ export const supabase = {
       const handler = (e: StorageEvent) => {
         if (e.key === "access_token") {
           if (e.newValue) {
-            callback("SIGNED_IN", { access_token: e.newValue });
+            const s = sessionFromToken(e.newValue);
+            callback(s ? "SIGNED_IN" : "SIGNED_OUT", s);
           } else {
             callback("SIGNED_OUT", null);
           }
