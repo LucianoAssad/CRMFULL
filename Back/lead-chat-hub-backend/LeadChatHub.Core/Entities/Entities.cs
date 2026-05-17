@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 using LeadChatHub.Core.Enums;
 
 namespace LeadChatHub.Core.Entities;
@@ -14,10 +15,10 @@ public class Empresa
     public string? Telefone { get; set; }
     public string? Email { get; set; }
     public bool Ativo { get; set; } = true;
-    [Column("tipo_conta")] public string TipoConta { get; set; } = "filha";
-    [Column("conta_gerente_id")] public Guid? ContaGerenteId { get; set; }
-    [Column("codigo_publico")] public string? CodigoPublico { get; set; }
-    [Column("created_at")] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    [Column("tipo_conta")][JsonPropertyName("tipo_conta")] public string TipoConta { get; set; } = "filha";
+    [Column("conta_gerente_id")][JsonPropertyName("conta_gerente_id")] public Guid? ContaGerenteId { get; set; }
+    [Column("codigo_publico")][JsonPropertyName("codigo_publico")] public string? CodigoPublico { get; set; }
+    [Column("created_at")][JsonPropertyName("created_at")] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     [ForeignKey("ContaGerenteId")] public Empresa? ContaGerente { get; set; }
     public ICollection<Empresa> ContasFilhas { get; set; } = new List<Empresa>();
