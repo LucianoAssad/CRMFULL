@@ -8,6 +8,7 @@ using LeadChatHub.API.Hubs;
 using LeadChatHub.Application.Services;
 using LeadChatHub.Infrastructure.Data;
 
+// v2
 var builder = WebApplication.CreateBuilder(args);
 
 // === Database ===
