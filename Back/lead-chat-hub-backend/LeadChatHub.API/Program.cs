@@ -169,6 +169,22 @@ using (var scope = app.Services.CreateScope())
     {
         db.Database.EnsureCreated();
 
+        // Garantir vínculo do admin manual com Empresa Principal
+        var adminManualId = Guid.Parse("a020e064-cd5e-491e-be54-e23c84249879");
+        var empresaPrincipalId = Guid.Parse("105db3e1-3050-47b6-8877-4b9830b2e248");
+        if (!db.UsuariosContas.Any(uc => uc.UsuarioId == adminManualId && uc.ContaId == empresaPrincipalId))
+        {
+            db.UsuariosContas.Add(new LeadChatHub.Core.Entities.UsuarioConta
+            {
+                UsuarioId = adminManualId,
+                ContaId = empresaPrincipalId,
+                Role = "super_admin",
+                Ativo = true
+            });
+            db.SaveChanges();
+            Console.WriteLine("Seed: vínculo admin -> Empresa Principal criado");
+        }
+
         if (!db.Empresas.Any())
         {
             var empresa = new LeadChatHub.Core.Entities.Empresa
