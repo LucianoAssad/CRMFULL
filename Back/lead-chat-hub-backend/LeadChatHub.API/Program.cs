@@ -90,8 +90,9 @@ builder.Services.AddCors(options =>
     {
         policy.SetIsOriginAllowed(_ => true)
               .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
+              .AllowAnyMethod();
+        // Note: AllowCredentials() removed — we use JWT Bearer tokens, not cookies.
+        // AllowCredentials() + wildcard origin is invalid per CORS spec.
     });
 });
 
