@@ -202,7 +202,20 @@ class QueryBuilder {
 
       const { data } = await api.get(`/${this.route}`, { params });
 
-      let result = Array.isArray(data) ? data : [data];
+      // Normalize: add snake_case aliases for all camelCase keys returned by API.
+      // This lets code use either lead.lead_id or lead.leadId interchangeably.
+      const addSnakeKeys = (obj: any): any => {
+        if (!obj || typeof obj !== "object" || Array.isArray(obj)) return obj;
+        const out: Record<string, any> = {};
+        for (const [k, v] of Object.entries(obj)) {
+          out[k] = v;
+          const snake = k.replace(/[A-Z]/g, (c) => `_${c.toLowerCase()}`);
+          if (snake !== k) out[snake] = v;
+        }
+        return out;
+      };
+
+      let result = (Array.isArray(data) ? data : [data]).map(addSnakeKeys);
 
       // Apply client-side filtering for eq/neq/in
       // Backend returns camelCase, but queries may use snake_case — try both
