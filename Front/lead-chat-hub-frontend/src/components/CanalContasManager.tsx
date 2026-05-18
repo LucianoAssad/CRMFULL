@@ -35,24 +35,16 @@ export function CanalContasManager({ canalId, reloadKey, onChanged }: Props) {
   );
 
   const load = async () => {
-    const { data, error } = await supabase
+    // Fetch without join — backend doesn't support nested selects; enrich via contas context
+    const { data } = await supabase
       .from("canal_contas" as any)
-      .select("id, conta_filha_id, ativo, conta:empresas!canal_contas_conta_filha_id_fkey(id, nome, tipo_conta, ativo)")
+      .select("id, conta_filha_id, ativo")
       .eq("canal_conectado_id", canalId);
-    if (error) {
-      // fallback sem fk hint
-      const { data: d2 } = await supabase
-        .from("canal_contas" as any)
-        .select("id, conta_filha_id, ativo")
-        .eq("canal_conectado_id", canalId);
-      const list = ((d2 as any) || []).map((v: any) => ({
-        ...v,
-        conta: contas.find((c) => c.id === v.conta_filha_id) ?? null,
-      }));
-      setVinculos(list);
-      return;
-    }
-    setVinculos((data as any) || []);
+    const list = ((data as any) || []).map((v: any) => ({
+      ...v,
+      conta: contas.find((c) => c.id === v.conta_filha_id) ?? null,
+    }));
+    setVinculos(list);
   };
 
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [canalId, reloadKey]);

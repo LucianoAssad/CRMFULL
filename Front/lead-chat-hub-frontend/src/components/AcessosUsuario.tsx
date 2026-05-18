@@ -56,12 +56,20 @@ export function AcessosUsuario({ usuarioId }: Props) {
   const load = async () => {
     const [c, a] = await Promise.all([
       supabase.from("empresas").select("id, nome, tipo_conta").order("nome"),
-      supabase.from("usuarios_contas").select("*, conta:empresas(id, nome, tipo_conta)").eq("usuario_id", usuarioId),
+      supabase.from("usuarios_contas").select("*").eq("usuario_id", usuarioId),
     ]);
     if (c.error) toast.error(c.error.message);
     if (a.error) toast.error(a.error.message);
-    setContas((c.data as any) || []);
-    setAcessos((a.data as any) || []);
+    const contasData: any[] = (c.data as any) || [];
+    const contasMap: Record<string, { id: string; nome: string; tipo_conta: string }> = {};
+    for (const x of contasData) contasMap[x.id] = x;
+    const acessosRaw: any[] = (a.data as any) || [];
+    const acessosEnrichidos = acessosRaw.map((ac) => ({
+      ...ac,
+      conta: contasMap[ac.conta_id] ?? null,
+    }));
+    setContas(contasData);
+    setAcessos(acessosEnrichidos);
   };
 
   useEffect(() => { load(); }, [usuarioId]);

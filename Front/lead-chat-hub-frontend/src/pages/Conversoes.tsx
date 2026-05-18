@@ -192,7 +192,7 @@ export default function Conversoes() {
     setLoading(true);
     const [c, d, e, cf, l, v, ids] = await Promise.all([
       supabase.from("conversoes_offline")
-        .select("*, lead:leads(nome,email,telefone,utm_campaign,origem)")
+        .select("*")
         .eq("empresa_id", activeContaId).order("convertido_em", { ascending: false }),
       supabase.from("conversao_destinos").select("*")
         .eq("empresa_id", activeContaId).order("updated_at", { ascending: false }),
@@ -208,11 +208,31 @@ export default function Conversoes() {
       supabase.from("lead_identidades").select("id,lead_id,tipo,valor,canal")
         .eq("empresa_id", activeContaId),
     ]);
-    setConversoes((c.data as any) || []);
+
+    // Backend does not support nested selects — enrich conversoes with lead data from the separate leads fetch
+    const leadsData: LeadOpt[] = (l.data as any) || [];
+    const leadMapLocal: Record<string, LeadOpt> = {};
+    for (const lead of leadsData) leadMapLocal[lead.id] = lead;
+
+    const conversoesBrutes: any[] = (c.data as any) || [];
+    const conversoesFinal: Conversao[] = conversoesBrutes.map((conv) => ({
+      ...conv,
+      lead: leadMapLocal[conv.lead_id]
+        ? {
+            nome: leadMapLocal[conv.lead_id].nome,
+            email: leadMapLocal[conv.lead_id].email,
+            telefone: leadMapLocal[conv.lead_id].telefone,
+            utm_campaign: leadMapLocal[conv.lead_id].utm_campaign,
+            origem: leadMapLocal[conv.lead_id].origem,
+          }
+        : null,
+    }));
+
+    setConversoes(conversoesFinal);
     setDestinos((d.data as any) || []);
     setExportacoes((e.data as any) || []);
     setConfigs((cf.data as any) || []);
-    setLeads((l.data as any) || []);
+    setLeads(leadsData);
     setVendas((v.data as any) || []);
     setIdentidades((ids.data as any) || []);
     setLoading(false);

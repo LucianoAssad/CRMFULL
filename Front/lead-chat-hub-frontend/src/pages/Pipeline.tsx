@@ -185,12 +185,27 @@ export default function Pipeline() {
     if (oppIds.length) {
       const { data: vendasData } = await supabase
         .from("vendas")
-        .select("id, valor_total, status, data_venda, lead_id, oportunidade_id, itens_venda(nome_produto)")
+        .select("id, valor_total, status, data_venda, lead_id, oportunidade_id")
         .eq("empresa_id", empresaId)
         .in("oportunidade_id", oppIds);
+      const vendasRaw: any[] = (vendasData as any) || [];
+      // Fetch itens_venda separately
+      let itensPorVenda: Record<string, string> = {};
+      if (vendasRaw.length > 0) {
+        const vids = vendasRaw.map((v) => v.id);
+        const { data: itensData } = await supabase
+          .from("itens_venda")
+          .select("venda_id, nome_produto")
+          .in("venda_id", vids);
+        const itensByVenda: Record<string, string[]> = {};
+        for (const item of (itensData as any) || []) {
+          if (item.nome_produto) (itensByVenda[item.venda_id] ||= []).push(item.nome_produto);
+        }
+        for (const [vid, nomes] of Object.entries(itensByVenda)) itensPorVenda[vid] = nomes.join(", ");
+      }
       const map: Record<string, VendaVinculada[]> = {};
-      (vendasData as any[] | null || []).forEach((v) => {
-        const produtos = (v.itens_venda || []).map((i: any) => i.nome_produto).filter(Boolean).join(", ");
+      vendasRaw.forEach((v) => {
+        const produtos = itensPorVenda[v.id] || "";
         const item = { id: v.id, valor_total: Number(v.valor_total || 0), status: v.status, data_venda: v.data_venda, lead_id: v.lead_id, produtos };
         if (!map[v.oportunidade_id]) map[v.oportunidade_id] = [];
         map[v.oportunidade_id].push(item);

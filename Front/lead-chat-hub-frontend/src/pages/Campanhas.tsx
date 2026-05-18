@@ -453,17 +453,25 @@ function NewCampanhaDialog({
       const ids = isManager ? scopedContaIds : [empresaId];
       if (!ids.length) { setConexoes([]); return; }
       // canais próprios + canais compartilhados vinculados à conta via canal_contas
-      const [own, shared] = await Promise.all([
+      const [own, sharedLinks] = await Promise.all([
         supabase.from("canais_conectados")
           .select("id, nome, nome_exibicao, tipo, provider, ativo, empresa_id")
           .in("empresa_id", ids).eq("ativo", true),
         supabase.from("canal_contas")
-          .select("canal_conectado_id, conta_filha_id, ativo, canal:canais_conectados(id, nome, nome_exibicao, tipo, provider, ativo, empresa_id)")
+          .select("canal_conectado_id, conta_filha_id, ativo")
           .in("conta_filha_id", ids).eq("ativo", true),
       ]);
       const list: any[] = [...(own.data || [])];
-      for (const r of (shared.data as any[]) || []) {
-        if (r.canal && !list.find((c) => c.id === r.canal.id)) list.push(r.canal);
+      const ownIds = new Set(list.map((c) => c.id));
+      const sharedCanalIds = [...new Set(
+        ((sharedLinks.data as any[]) || []).map((r) => r.canal_conectado_id).filter((id: string) => id && !ownIds.has(id))
+      )];
+      if (sharedCanalIds.length > 0) {
+        const { data: sharedCanais } = await supabase
+          .from("canais_conectados")
+          .select("id, nome, nome_exibicao, tipo, provider, ativo, empresa_id")
+          .in("id", sharedCanalIds).eq("ativo", true);
+        for (const c of (sharedCanais as any[]) || []) list.push(c);
       }
       setConexoes(list);
     })();
@@ -519,15 +527,29 @@ function NewCampanhaDialog({
     let leads = (data as any[]) || [];
 
     if (produtoNome.trim()) {
-      const { data: vendas } = await supabase
+      const { data: vendasData } = await supabase
         .from("vendas")
-        .select("lead_id, itens_venda(nome_produto)")
+        .select("id, lead_id")
         .in("empresa_id", ids);
-      const leadsComProduto = new Set(
-        (vendas || []).filter((v: any) =>
-          (v.itens_venda || []).some((i: any) => (i.nome_produto || "").toLowerCase().includes(produtoNome.toLowerCase()))
-        ).map((v: any) => v.lead_id)
-      );
+      const vendasRaw: any[] = (vendasData as any) || [];
+      let leadsComProduto = new Set<string>();
+      if (vendasRaw.length > 0) {
+        const vids = vendasRaw.map((v: any) => v.id);
+        const { data: itensData } = await supabase
+          .from("itens_venda")
+          .select("venda_id, nome_produto")
+          .in("venda_id", vids);
+        const itensByVenda: Record<string, string[]> = {};
+        for (const item of (itensData as any) || []) {
+          if (item.nome_produto) (itensByVenda[item.venda_id] ||= []).push(item.nome_produto);
+        }
+        const q = produtoNome.toLowerCase();
+        leadsComProduto = new Set(
+          vendasRaw
+            .filter((v: any) => (itensByVenda[v.id] || []).some((n: string) => n.toLowerCase().includes(q)))
+            .map((v: any) => v.lead_id)
+        );
+      }
       leads = leads.filter((l) => leadsComProduto.has(l.id));
     }
 

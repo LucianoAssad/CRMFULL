@@ -65,13 +65,28 @@ export default function Leads() {
     setLoading(true);
     const [{ data: l }, { data: c }, { data: v }, { data: co }, ids] = await Promise.all([
       supabase.from("leads").select("*").eq("empresa_id", activeContaId).order("created_at", { ascending: false }),
-      supabase.from("conversas").select("id, lead_id, canal_id, status, ultima_mensagem_em, canal:canais_conectados(nome, tipo)").eq("empresa_id", activeContaId),
+      supabase.from("conversas").select("id, lead_id, canal_id, status, ultima_mensagem_em").eq("empresa_id", activeContaId),
       supabase.from("vendas").select("id, lead_id, valor_total, data_venda, status").eq("empresa_id", activeContaId),
       supabase.from("conversoes_offline").select("id, lead_id, plataforma, valor, nome_conversao, convertido_em").eq("empresa_id", activeContaId),
       listarIdentidadesPorEmpresa(activeContaId),
     ]);
+    const conversasRaw: any[] = (c as any) || [];
+    // Enrich conversas with canal data (backend doesn't support nested selects)
+    const canalIds = [...new Set(conversasRaw.map((x) => x.canal_id).filter(Boolean))];
+    let canaisMap: Record<string, { nome: string; tipo: string }> = {};
+    if (canalIds.length > 0) {
+      const { data: canaisData } = await supabase
+        .from("canais_conectados")
+        .select("id, nome, tipo")
+        .in("id", canalIds);
+      for (const canal of (canaisData as any) || []) canaisMap[canal.id] = { nome: canal.nome, tipo: canal.tipo };
+    }
+    const conversasEnriquecidas = conversasRaw.map((conv) => ({
+      ...conv,
+      canal: conv.canal_id ? (canaisMap[conv.canal_id] ?? null) : null,
+    }));
     setLeads((l as any) || []);
-    setConversas((c as any) || []);
+    setConversas(conversasEnriquecidas);
     setVendas((v as any) || []);
     setConversoes((co as any) || []);
     setIdentidades(ids);

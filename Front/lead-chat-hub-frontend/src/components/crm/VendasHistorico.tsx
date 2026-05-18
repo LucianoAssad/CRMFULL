@@ -15,12 +15,29 @@ export function VendasHistorico({ leadId, refreshKey }: { leadId: string; refres
   const [vendas, setVendas] = useState<Venda[]>([]);
 
   useEffect(() => {
-    supabase
-      .from("vendas")
-      .select("id, data_venda, status, valor_total, itens_venda(nome_produto, quantidade, valor_total)")
-      .eq("lead_id", leadId)
-      .order("data_venda", { ascending: false })
-      .then(({ data }) => setVendas((data as any) || []));
+    (async () => {
+      const { data: vendasData } = await supabase
+        .from("vendas")
+        .select("id, data_venda, status, valor_total")
+        .eq("lead_id", leadId)
+        .order("data_venda", { ascending: false });
+      const vendasRaw: any[] = (vendasData as any) || [];
+      if (vendasRaw.length === 0) { setVendas([]); return; }
+      const vendaIds = vendasRaw.map((v) => v.id);
+      const { data: itensData } = await supabase
+        .from("itens_venda")
+        .select("venda_id, nome_produto, quantidade, valor_total")
+        .in("venda_id", vendaIds);
+      const itensByVenda: Record<string, Item[]> = {};
+      for (const item of (itensData as any) || []) {
+        (itensByVenda[item.venda_id] ||= []).push({
+          nome_produto: item.nome_produto ?? null,
+          quantidade: Number(item.quantidade) || 1,
+          valor_total: Number(item.valor_total) || 0,
+        });
+      }
+      setVendas(vendasRaw.map((v) => ({ ...v, itens_venda: itensByVenda[v.id] || [] })));
+    })();
   }, [leadId, refreshKey]);
 
   if (vendas.length === 0) {

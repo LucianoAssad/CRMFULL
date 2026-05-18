@@ -107,17 +107,45 @@ export default function Vendas() {
     const [v, l, p, c, co, op] = await Promise.all([
       supabase
         .from("vendas")
-        .select("id, empresa_id, lead_id, conversa_id, oportunidade_id, status, valor_total, observacoes, data_venda, created_at, leads!inner(nome, origem), itens_venda(id, nome_produto, produto_servico_id)")
+        .select("*")
         .eq("empresa_id", empresaId)
         .order("data_venda", { ascending: false }),
-      supabase.from("leads").select("id, nome").eq("empresa_id", empresaId).order("nome"),
+      supabase.from("leads").select("id, nome, origem").eq("empresa_id", empresaId).order("nome"),
       supabase.from("produtos_servicos").select("id, nome, valor_padrao").eq("empresa_id", empresaId).eq("ativo", true).order("nome"),
       supabase.from("conversas").select("id, lead_id").eq("empresa_id", empresaId),
       supabase.from("conversoes_offline").select("id, lead_id, status_envio").eq("empresa_id", empresaId),
       supabase.from("oportunidades").select("id, empresa_id, lead_id, titulo, produto_id, valor_estimado, status, conversa_id, origem, canal_origem").eq("empresa_id", empresaId),
     ]);
-    setVendas((v.data as any) || []);
-    setLeads((l.data as any) || []);
+
+    const vendasRaw: any[] = (v.data as any) || [];
+    const leadsRaw: any[] = (l.data as any) || [];
+
+    // Build leads map for enrichment
+    const leadsMapLocal: Record<string, { nome: string; origem: string | null }> = {};
+    for (const lead of leadsRaw) leadsMapLocal[lead.id] = { nome: lead.nome ?? "", origem: lead.origem ?? null };
+
+    // Fetch itens_venda separately (backend does not support nested selects)
+    let itensByVenda: Record<string, { id: string; nome_produto: string | null; produto_servico_id: string }[]> = {};
+    if (vendasRaw.length > 0) {
+      const vendaIds = vendasRaw.map((x: any) => x.id);
+      const { data: itensData } = await supabase
+        .from("itens_venda")
+        .select("id, venda_id, nome_produto, produto_servico_id")
+        .in("venda_id", vendaIds);
+      for (const item of (itensData as any) || []) {
+        (itensByVenda[item.venda_id] ||= []).push({ id: item.id, nome_produto: item.nome_produto ?? null, produto_servico_id: item.produto_servico_id });
+      }
+    }
+
+    // Enrich vendas with leads and itens
+    const enrichedVendas = vendasRaw.map((venda: any) => ({
+      ...venda,
+      leads: leadsMapLocal[venda.lead_id] ? { nome: leadsMapLocal[venda.lead_id].nome, origem: leadsMapLocal[venda.lead_id].origem } : null,
+      itens_venda: itensByVenda[venda.id] || [],
+    }));
+
+    setVendas(enrichedVendas);
+    setLeads(leadsRaw.map((x: any) => ({ id: x.id, nome: x.nome ?? "" })));
     setProdutos((p.data as any) || []);
     setConversas((c.data as any) || []);
     setConversoes((co.data as any) || []);

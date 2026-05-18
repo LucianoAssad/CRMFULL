@@ -81,13 +81,13 @@ export async function contaTemAdminDireto(contaId: string): Promise<boolean> {
   if (!contaId) return false;
   const { data, error } = await supabase
     .from("usuarios_contas")
-    .select("id, role, ativo, usuario:usuarios!inner(ativo)")
+    .select("id, role, ativo")
     .eq("conta_id", contaId)
     .eq("ativo", true)
     .in("role", ["admin_filha", "admin_gerente", "super_admin"]);
   if (error) return false;
   const rows = (data ?? []) as any[];
-  return rows.some((r) => r.usuario?.ativo !== false);
+  return rows.length > 0;
 }
 
 /**
