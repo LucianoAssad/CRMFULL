@@ -73,8 +73,8 @@ export default function Index() {
   const loadConversas = async () => {
     if (scopedContaIds.length === 0) { setConversas([]); return; }
 
-    // Fetch conversas
-    let q = supabase.from("conversas").select("*").order("ultima_mensagem_em", { ascending: false });
+    // Fetch conversas — use high limit to get all records beyond default 100
+    let q = supabase.from("conversas").select("*").order("ultima_mensagem_em", { ascending: false }).limit(500);
     q = q.in("empresa_id", scopedContaIds);
     const { data, error } = await q;
     if (error) toast.error(error.message);
@@ -85,7 +85,7 @@ export default function Index() {
     const leadIds = [...new Set(raw.map((c: any) => c.lead_id ?? c.leadId).filter(Boolean))];
     let leadsMap: Record<string, Lead> = {};
     if (leadIds.length > 0) {
-      const { data: leadsData } = await supabase.from("leads").select("*").in("id", leadIds);
+      const { data: leadsData } = await supabase.from("leads").select("*").in("id", leadIds).limit(500);
       for (const l of leadsData || []) leadsMap[l.id] = normalizeLead(l);
     }
 

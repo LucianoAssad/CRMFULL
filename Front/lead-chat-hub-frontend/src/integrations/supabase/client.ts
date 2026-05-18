@@ -105,7 +105,7 @@ class QueryBuilder {
   private _select: string = "*";
   private _orderBy: string = "";
   private _orderAsc: boolean = true;
-  private _limit: number = 100;
+  private _limit: number = 1000;
   private _single: boolean = false;
   private _maybeSingle: boolean = false;
   private _returnCount: boolean = false;
