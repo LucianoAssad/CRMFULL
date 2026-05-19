@@ -13,10 +13,8 @@
         "packagesPath": "C:\\Users\\lucia\\.nuget\\packages\\",
         "outputPath": "C:\\Users\\lucia\\OneDrive\\Área de Trabalho\\Projetos\\CRM\\Back\\lead-chat-hub-backend\\LeadChatHub.Core\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
+          "C:\\Users\\lucia\\OneDrive\\Área de Trabalho\\Projetos\\CRM\\Back\\lead-chat-hub-backend\\NuGet.Config",
           "C:\\Users\\lucia\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"

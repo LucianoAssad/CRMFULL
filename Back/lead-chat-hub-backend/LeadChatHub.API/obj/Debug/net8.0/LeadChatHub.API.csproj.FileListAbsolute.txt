@@ -259,3 +259,4 @@ C:\Users\lucia\OneDrive\Área de Trabalho\Projetos\CRM\Back\lead-chat-hub-backen
 C:\Users\lucia\OneDrive\Área de Trabalho\Projetos\CRM\Back\lead-chat-hub-backend\LeadChatHub.API\obj\Debug\net8.0\LeadChatHub.API.pdb
 C:\Users\lucia\OneDrive\Área de Trabalho\Projetos\CRM\Back\lead-chat-hub-backend\LeadChatHub.API\obj\Debug\net8.0\LeadChatHub.API.genruntimeconfig.cache
 C:\Users\lucia\OneDrive\Área de Trabalho\Projetos\CRM\Back\lead-chat-hub-backend\LeadChatHub.API\obj\Debug\net8.0\ref\LeadChatHub.API.dll
+C:\Users\lucia\OneDrive\Área de Trabalho\Projetos\CRM\Back\lead-chat-hub-backend\LeadChatHub.API\obj\Debug\net8.0\LeadChatHub.API.sourcelink.json

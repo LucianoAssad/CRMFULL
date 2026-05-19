@@ -20,3 +20,4 @@ C:\Users\lucia\OneDrive\Área de Trabalho\Projetos\CRM\Back\lead-chat-hub-backen
 C:\Users\lucia\OneDrive\Área de Trabalho\Projetos\CRM\Back\lead-chat-hub-backend\LeadChatHub.Core\obj\Debug\net8.0\refint\LeadChatHub.Core.dll
 C:\Users\lucia\OneDrive\Área de Trabalho\Projetos\CRM\Back\lead-chat-hub-backend\LeadChatHub.Core\obj\Debug\net8.0\LeadChatHub.Core.pdb
 C:\Users\lucia\OneDrive\Área de Trabalho\Projetos\CRM\Back\lead-chat-hub-backend\LeadChatHub.Core\obj\Debug\net8.0\ref\LeadChatHub.Core.dll
+C:\Users\lucia\OneDrive\Área de Trabalho\Projetos\CRM\Back\lead-chat-hub-backend\LeadChatHub.Core\obj\Debug\net8.0\LeadChatHub.Core.sourcelink.json
