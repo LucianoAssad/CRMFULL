@@ -38,6 +38,20 @@ public class AuthController : ControllerBase
         return Created("", result);
     }
 
+    [HttpPost("signup")]
+    public async Task<IActionResult> Signup([FromBody] SignupRequest req)
+    {
+        if (string.IsNullOrWhiteSpace(req.EmpresaNome)) return BadRequest(new { error = "Nome da empresa obrigatório" });
+        if (string.IsNullOrWhiteSpace(req.AdminNome)) return BadRequest(new { error = "Nome do administrador obrigatório" });
+        if (string.IsNullOrWhiteSpace(req.AdminEmail)) return BadRequest(new { error = "E-mail obrigatório" });
+        if (string.IsNullOrWhiteSpace(req.AdminSenha) || req.AdminSenha.Length < 6)
+            return BadRequest(new { error = "Senha deve ter ao menos 6 caracteres" });
+
+        var result = await _auth.SignupAsync(req);
+        if (result == null) return Conflict(new { error = "E-mail já cadastrado" });
+        return Created("", result);
+    }
+
     [Authorize]
     [HttpPost("change-password")]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest req)

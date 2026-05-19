@@ -79,6 +79,92 @@ public class AuthService
         return MapUser(user);
     }
 
+    public async Task<SignupResponse?> SignupAsync(SignupRequest req)
+    {
+        // Validar e-mail único
+        var emailExiste = await _db.Usuarios.AnyAsync(u => u.Email.ToLower() == req.AdminEmail.ToLower());
+        if (emailExiste) return null;
+
+        var tipoConta = req.TipoConta == "gerente" ? "gerente" : "filha";
+
+        // 1. Criar empresa
+        var empresa = new Empresa
+        {
+            Nome = req.EmpresaNome.Trim(),
+            TipoConta = tipoConta,
+            Email = req.EmpresaEmail?.Trim() ?? null,
+            Telefone = req.EmpresaTelefone?.Trim() ?? null,
+            Ativo = true
+        };
+        _db.Empresas.Add(empresa);
+
+        // 2. Criar usuário admin
+        var roleAdmin = tipoConta == "gerente" ? "admin_gerente" : "admin_filha";
+        var usuario = new Usuario
+        {
+            EmpresaId = empresa.Id,
+            Nome = req.AdminNome.Trim(),
+            Email = req.AdminEmail.Trim().ToLower(),
+            Telefone = req.EmpresaTelefone?.Trim() ?? null,
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(req.AdminSenha),
+            Role = roleAdmin,
+            Ativo = true
+        };
+        _db.Usuarios.Add(usuario);
+
+        // 3. Vínculo usuarios_contas
+        _db.UsuariosContas.Add(new UsuarioConta
+        {
+            UsuarioId = usuario.Id,
+            ContaId = empresa.Id,
+            Role = roleAdmin,
+            Ativo = true
+        });
+
+        await _db.SaveChangesAsync();
+
+        // 4. Pipeline padrão (apenas conta filha)
+        if (tipoConta == "filha")
+        {
+            var pipeline = new Pipeline
+            {
+                EmpresaId = empresa.Id,
+                Nome = "Pipeline Padrão",
+                Ativo = true
+            };
+            _db.Pipelines.Add(pipeline);
+            await _db.SaveChangesAsync();
+
+            var etapas = new[] {
+                new PipelineEtapa { PipelineId = pipeline.Id, Nome = "Novo", Ordem = 1, Cor = "#3b82f6" },
+                new PipelineEtapa { PipelineId = pipeline.Id, Nome = "Em atendimento", Ordem = 2, Cor = "#f59e0b" },
+                new PipelineEtapa { PipelineId = pipeline.Id, Nome = "Orçamento enviado", Ordem = 3, Cor = "#8b5cf6" },
+                new PipelineEtapa { PipelineId = pipeline.Id, Nome = "Negociação", Ordem = 4, Cor = "#06b6d4" },
+                new PipelineEtapa { PipelineId = pipeline.Id, Nome = "Ganho", Ordem = 5, Cor = "#10b981" },
+                new PipelineEtapa { PipelineId = pipeline.Id, Nome = "Perdido", Ordem = 6, Cor = "#ef4444" },
+            };
+            _db.PipelineEtapas.AddRange(etapas);
+            await _db.SaveChangesAsync();
+        }
+
+        // 5. Perfil comercial inicial
+        _db.PerfisComerciais.Add(new PerfilComercial
+        {
+            EmpresaId = empresa.Id,
+            NomeEmpresa = req.EmpresaNome,
+            Telefone = req.EmpresaTelefone?.Trim() ?? null,
+            Email = req.EmpresaEmail?.Trim() ?? null,
+        });
+        await _db.SaveChangesAsync();
+
+        // 6. Gerar JWT
+        var (accessToken, expiresAt) = GenerateJwt(usuario);
+        var refreshToken = await CreateRefreshTokenAsync(usuario.Id);
+
+        return new SignupResponse(accessToken, refreshToken, expiresAt,
+            empresa.Id.ToString(), usuario.Id.ToString(), tipoConta);
+    }
+
     public async Task<bool> ChangePasswordAsync(Guid userId, ChangePasswordRequest req)
     {
         var user = await _db.Usuarios.FindAsync(userId);
