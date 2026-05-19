@@ -496,6 +496,7 @@ public class RespostaRapida
 public class LeadIdentidade
 {
     [Key] public Guid Id { get; set; } = Guid.NewGuid();
+    [Column("empresa_id")] public Guid? EmpresaId { get; set; }
     [Column("lead_id")] public Guid LeadId { get; set; }
     public string Canal { get; set; } = "whatsapp";
     public string Identificador { get; set; } = "";
@@ -520,6 +521,8 @@ public class Oportunidade
     public string Status { get; set; } = "aberta";
     [Column("responsavel_id")] public Guid? ResponsavelId { get; set; }
     [Column("data_fechamento")] public DateTime? DataFechamento { get; set; }
+    [Column("motivo_perda")] public string? MotivoPerdad { get; set; }
+    [Column("perdida_em")] public DateTime? PerdidaEm { get; set; }
     [Column("created_at")] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     [Column("updated_at")] public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }

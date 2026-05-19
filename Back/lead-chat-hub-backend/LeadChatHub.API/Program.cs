@@ -238,6 +238,32 @@ using (var scope = app.Services.CreateScope())
                 ALTER TABLE perfil_comercial ADD COLUMN IF NOT EXISTS parcelamento_padrao varchar(200) NULL;
                 ALTER TABLE perfil_comercial ADD COLUMN IF NOT EXISTS ativo boolean NOT NULL DEFAULT true;
 
+                -- campanhas: garantir colunas presentes
+                ALTER TABLE campanhas ADD COLUMN IF NOT EXISTS criada_por_conta_id uuid NULL;
+                ALTER TABLE campanhas ADD COLUMN IF NOT EXISTS conta_gerente_id uuid NULL;
+                ALTER TABLE campanhas ADD COLUMN IF NOT EXISTS escopo varchar(50) NOT NULL DEFAULT 'conta';
+                ALTER TABLE campanhas ADD COLUMN IF NOT EXISTS assunto varchar(300) NULL;
+                ALTER TABLE campanhas ADD COLUMN IF NOT EXISTS variaveis text NOT NULL DEFAULT '[]';
+                ALTER TABLE campanhas ADD COLUMN IF NOT EXISTS filtros text NOT NULL DEFAULT '{}';
+                ALTER TABLE campanhas ADD COLUMN IF NOT EXISTS agendada_para timestamptz NULL;
+                ALTER TABLE campanhas ADD COLUMN IF NOT EXISTS iniciada_em timestamptz NULL;
+                ALTER TABLE campanhas ADD COLUMN IF NOT EXISTS finalizada_em timestamptz NULL;
+                ALTER TABLE campanhas ADD COLUMN IF NOT EXISTS total_destinatarios int NOT NULL DEFAULT 0;
+                ALTER TABLE campanhas ADD COLUMN IF NOT EXISTS total_enviados int NOT NULL DEFAULT 0;
+                ALTER TABLE campanhas ADD COLUMN IF NOT EXISTS total_falhas int NOT NULL DEFAULT 0;
+                ALTER TABLE campanhas ADD COLUMN IF NOT EXISTS total_optout int NOT NULL DEFAULT 0;
+
+                -- lead_identidades: garantir coluna identificador unique
+                ALTER TABLE lead_identidades ADD COLUMN IF NOT EXISTS empresa_id uuid NULL;
+                ALTER TABLE lead_identidades ADD COLUMN IF NOT EXISTS canal varchar(50) NULL;
+
+                -- oportunidades: garantir colunas
+                ALTER TABLE oportunidades ADD COLUMN IF NOT EXISTS pipeline_id uuid NULL;
+                ALTER TABLE oportunidades ADD COLUMN IF NOT EXISTS etapa_id uuid NULL;
+                ALTER TABLE oportunidades ADD COLUMN IF NOT EXISTS responsavel_id uuid NULL;
+                ALTER TABLE oportunidades ADD COLUMN IF NOT EXISTS motivo_perda text NULL;
+                ALTER TABLE oportunidades ADD COLUMN IF NOT EXISTS perdida_em timestamptz NULL;
+
                 -- orcamentos: renomear tabela itens_orcamento → orcamento_itens se necessário
                 DO $$ BEGIN
                     IF EXISTS (SELECT FROM pg_tables WHERE tablename = 'itens_orcamento') AND
