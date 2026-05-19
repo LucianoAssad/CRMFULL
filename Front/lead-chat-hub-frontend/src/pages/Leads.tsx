@@ -364,7 +364,27 @@ export default function Leads() {
             <div className="col-span-2"><Label>Nome *</Label><Input value={createForm.nome || ""} onChange={(e) => setCreateForm({ ...createForm, nome: e.target.value })} /></div>
             <div><Label>Telefone</Label><Input value={createForm.telefone || ""} onChange={(e) => setCreateForm({ ...createForm, telefone: e.target.value })} /></div>
             <div><Label>Email</Label><Input value={createForm.email || ""} onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })} /></div>
-            <div><Label>Origem</Label><Input placeholder="ex: site, indicação" value={createForm.origem || ""} onChange={(e) => setCreateForm({ ...createForm, origem: e.target.value })} /></div>
+            <div>
+              <Label>Origem</Label>
+              <Select value={createForm.origem || ""} onValueChange={(v) => setCreateForm({ ...createForm, origem: v || null })}>
+                <SelectTrigger><SelectValue placeholder="Selecionar origem" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Sem origem</SelectItem>
+                  <SelectItem value="google_ads">Google Ads</SelectItem>
+                  <SelectItem value="meta_ads">Meta Ads</SelectItem>
+                  <SelectItem value="tiktok_ads">TikTok Ads</SelectItem>
+                  <SelectItem value="google_organico">Google Orgânico</SelectItem>
+                  <SelectItem value="instagram">Instagram</SelectItem>
+                  <SelectItem value="facebook">Facebook</SelectItem>
+                  <SelectItem value="whatsapp">WhatsApp</SelectItem>
+                  <SelectItem value="webchat">Webchat</SelectItem>
+                  <SelectItem value="indicacao">Indicação</SelectItem>
+                  <SelectItem value="newsletter">Newsletter</SelectItem>
+                  <SelectItem value="bing">Bing</SelectItem>
+                  <SelectItem value="outros">Outros</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <div>
               <Label>Status</Label>
               <Select value={createForm.status || "novo"} onValueChange={(v) => setCreateForm({ ...createForm, status: v as LeadStatus })}>
@@ -396,7 +416,27 @@ export default function Leads() {
                   <div><Label>Nome</Label><Input value={editForm.nome || ""} onChange={(e) => setEditForm({ ...editForm, nome: e.target.value })} /></div>
                   <div><Label>Telefone</Label><Input value={editForm.telefone || ""} onChange={(e) => setEditForm({ ...editForm, telefone: e.target.value })} /></div>
                   <div><Label>Email</Label><Input value={editForm.email || ""} onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} /></div>
-                  <div><Label>Origem</Label><Input value={editForm.origem || ""} onChange={(e) => setEditForm({ ...editForm, origem: e.target.value })} /></div>
+                  <div>
+                    <Label>Origem</Label>
+                    <Select value={editForm.origem || ""} onValueChange={(v) => setEditForm({ ...editForm, origem: v || null })}>
+                      <SelectTrigger><SelectValue placeholder="Selecionar origem" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">Sem origem</SelectItem>
+                        <SelectItem value="google_ads">Google Ads</SelectItem>
+                        <SelectItem value="meta_ads">Meta Ads</SelectItem>
+                        <SelectItem value="tiktok_ads">TikTok Ads</SelectItem>
+                        <SelectItem value="google_organico">Google Orgânico</SelectItem>
+                        <SelectItem value="instagram">Instagram</SelectItem>
+                        <SelectItem value="facebook">Facebook</SelectItem>
+                        <SelectItem value="whatsapp">WhatsApp</SelectItem>
+                        <SelectItem value="webchat">Webchat</SelectItem>
+                        <SelectItem value="indicacao">Indicação</SelectItem>
+                        <SelectItem value="newsletter">Newsletter</SelectItem>
+                        <SelectItem value="bing">Bing</SelectItem>
+                        <SelectItem value="outros">Outros</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                   <div>
                     <Label>Status</Label>
                     <Select value={editForm.status || "novo"} onValueChange={(v) => setEditForm({ ...editForm, status: v as LeadStatus })}>

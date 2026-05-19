@@ -106,21 +106,13 @@ export default function ManagerContas() {
         .order("nome"),
       supabase
         .from("solicitacoes_vinculo_conta")
-        .select(`
-          id, conta_solicitante_id, conta_alvo_id, tipo_solicitacao, tipo_vinculo_solicitado, status, mensagem, created_at,
-          solicitante:empresas!solicitacoes_vinculo_conta_conta_solicitante_id_fkey(id, nome, tipo_conta, codigo_publico),
-          alvo:empresas!solicitacoes_vinculo_conta_conta_alvo_id_fkey(id, nome, tipo_conta, codigo_publico)
-        `)
+        .select("id, conta_solicitante_id, conta_alvo_id, tipo_solicitacao, tipo_vinculo_solicitado, status, mensagem, created_at")
         .eq("conta_alvo_id", gerenteId)
         .eq("tipo_solicitacao", "vinculo")
         .order("created_at", { ascending: false }),
       supabase
         .from("solicitacoes_vinculo_conta")
-        .select(`
-          id, conta_solicitante_id, conta_alvo_id, tipo_solicitacao, tipo_vinculo_solicitado, status, mensagem, created_at,
-          solicitante:empresas!solicitacoes_vinculo_conta_conta_solicitante_id_fkey(id, nome, tipo_conta, codigo_publico),
-          alvo:empresas!solicitacoes_vinculo_conta_conta_alvo_id_fkey(id, nome, tipo_conta, codigo_publico)
-        `)
+        .select("id, conta_solicitante_id, conta_alvo_id, tipo_solicitacao, tipo_vinculo_solicitado, status, mensagem, created_at")
         .eq("conta_solicitante_id", gerenteId)
         .eq("tipo_solicitacao", "vinculo")
         .order("created_at", { ascending: false }),
@@ -128,8 +120,26 @@ export default function ManagerContas() {
     setLoading(false);
     if (fRes.error) toast.error(fRes.error.message);
     setFilhas((fRes.data as any) || []);
-    setRecebidos((rRes.data as any) || []);
-    setEnviados((eRes.data as any) || []);
+
+    const solicsRaw: Solic[] = [...((rRes.data as any) || []), ...((eRes.data as any) || [])];
+    const empresaIds = [...new Set(solicsRaw.flatMap((s) => [s.conta_solicitante_id, s.conta_alvo_id]).filter(Boolean))];
+    let empresasMap: Record<string, EmpresaMin> = {};
+    if (empresaIds.length > 0) {
+      const { data: empresasData } = await supabase
+        .from("empresas")
+        .select("id, nome, tipo_conta, codigo_publico")
+        .in("id", empresaIds);
+      for (const e of (empresasData as any) || []) empresasMap[e.id] = e;
+    }
+
+    const enrich = (s: Solic): Solic => ({
+      ...s,
+      solicitante: empresasMap[s.conta_solicitante_id] ?? null,
+      alvo: empresasMap[s.conta_alvo_id] ?? null,
+    });
+
+    setRecebidos(((rRes.data as any) || []).map(enrich));
+    setEnviados(((eRes.data as any) || []).map(enrich));
   };
 
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [gerenteId]);
@@ -347,26 +357,33 @@ export default function ManagerContas() {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {filhas.map((f) => (
-                <Card key={f.id}>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="flex items-center justify-between text-base">
-                      <span className="truncate">{f.nome}</span>
-                      <Badge variant={f.ativo ? "default" : "secondary"}>{f.ativo ? "Ativa" : "Inativa"}</Badge>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3 text-sm">
-                    <div className="flex items-center justify-between text-muted-foreground">
-                      <span>Conta filha</span>
-                      {f.codigo_publico && <span className="font-mono text-xs">{formatCodigoPublico(f.codigo_publico)}</span>}
-                    </div>
-                    <Button size="sm" className="w-full" onClick={() => acessar(f)}>
-                      <LogIn className="mr-2 h-4 w-4" /> Acessar conta
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
+            <div className="rounded-md border bg-card">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nome</TableHead>
+                    <TableHead>Código público</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filhas.map((f) => (
+                    <TableRow key={f.id}>
+                      <TableCell className="font-medium">{f.nome}</TableCell>
+                      <TableCell className="font-mono text-xs">{formatCodigoPublico(f.codigo_publico)}</TableCell>
+                      <TableCell>
+                        <Badge variant={f.ativo ? "default" : "secondary"}>{f.ativo ? "Ativa" : "Inativa"}</Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button size="sm" onClick={() => acessar(f)}>
+                          <LogIn className="mr-2 h-4 w-4" /> Acessar conta
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
           )}
         </TabsContent>
