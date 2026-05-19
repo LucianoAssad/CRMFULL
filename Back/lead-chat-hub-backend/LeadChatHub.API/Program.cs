@@ -255,6 +255,36 @@ using (var scope = app.Services.CreateScope())
                 -- orcamentos: garantir numero como int
                 ALTER TABLE orcamentos ALTER COLUMN numero TYPE integer USING COALESCE(numero::integer, 0);
                 ALTER TABLE orcamentos ALTER COLUMN numero SET DEFAULT 0;
+
+                -- RF-158: vínculos entre contas (pedidos + aprovações)
+                CREATE TABLE IF NOT EXISTS solicitacoes_vinculo_conta (
+                    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+                    conta_solicitante_id uuid NOT NULL,
+                    conta_alvo_id uuid NOT NULL,
+                    tipo_solicitacao varchar(50) NOT NULL DEFAULT 'vinculo',
+                    tipo_vinculo_solicitado varchar(50) NULL,
+                    status varchar(30) NOT NULL DEFAULT 'pendente',
+                    mensagem text NULL,
+                    respondido_por uuid NULL,
+                    respondido_em timestamptz NULL,
+                    created_by uuid NULL,
+                    created_at timestamptz NOT NULL DEFAULT NOW(),
+                    updated_at timestamptz NOT NULL DEFAULT NOW()
+                );
+
+                CREATE TABLE IF NOT EXISTS contas_vinculos (
+                    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+                    conta_gerente_id uuid NOT NULL,
+                    conta_alvo_id uuid NOT NULL,
+                    tipo_vinculo varchar(50) NOT NULL DEFAULT 'gerenciamento',
+                    status varchar(30) NOT NULL DEFAULT 'ativo',
+                    principal boolean NOT NULL DEFAULT false,
+                    origem varchar(50) NOT NULL DEFAULT 'manual',
+                    solicitacao_id uuid NULL,
+                    created_by uuid NULL,
+                    created_at timestamptz NOT NULL DEFAULT NOW(),
+                    updated_at timestamptz NOT NULL DEFAULT NOW()
+                );
             ";
             cmd.ExecuteNonQuery();
         }

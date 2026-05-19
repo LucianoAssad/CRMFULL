@@ -39,6 +39,8 @@ public class AppDbContext : DbContext
     public DbSet<Importacao> Importacoes => Set<Importacao>();
     public DbSet<PerfilComercial> PerfisComerciais => Set<PerfilComercial>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<SolicitacaoVinculoConta> SolicitacoesVinculoConta => Set<SolicitacaoVinculoConta>();
+    public DbSet<ContaVinculo> ContasVinculos => Set<ContaVinculo>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

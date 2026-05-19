@@ -372,6 +372,20 @@ public class PerfilComercialController : CrudController<PerfilComercial>
     }
 }
 
+// ===================== SolicitacoesVinculoConta =====================
+[ApiController, Route("api/solicitacoes-vinculo-conta")]
+public class SolicitacoesVinculoContaController : CrudController<SolicitacaoVinculoConta>
+{
+    public SolicitacoesVinculoContaController(AppDbContext db) : base(db) { }
+}
+
+// ===================== ContasVinculos =====================
+[ApiController, Route("api/contas-vinculos")]
+public class ContasVinculosController : CrudController<ContaVinculo>
+{
+    public ContasVinculosController(AppDbContext db) : base(db) { }
+}
+
 // ===================== AuditLogs =====================
 [ApiController, Route("api/audit-logs")]
 public class AuditLogsController : CrudController<AuditLog>

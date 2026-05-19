@@ -87,6 +87,8 @@ const TABLE_ROUTE_MAP: Record<string, string> = {
   webhooks_config: "webhooks-config",
   importacoes: "importacoes",
   perfil_comercial: "perfil-comercial",
+  solicitacoes_vinculo_conta: "solicitacoes-vinculo-conta",
+  contas_vinculos: "contas-vinculos",
   audit_logs: "audit-logs",
 };
 

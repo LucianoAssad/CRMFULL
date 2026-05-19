@@ -592,6 +592,39 @@ public class RefreshToken
     [ForeignKey("UsuarioId")] public Usuario? Usuario { get; set; }
 }
 
+[Table("solicitacoes_vinculo_conta")]
+public class SolicitacaoVinculoConta
+{
+    [Key] public Guid Id { get; set; } = Guid.NewGuid();
+    [Column("conta_solicitante_id")] public Guid ContaSolicitanteId { get; set; }
+    [Column("conta_alvo_id")] public Guid ContaAlvoId { get; set; }
+    [Column("tipo_solicitacao")] public string TipoSolicitacao { get; set; } = "vinculo";
+    [Column("tipo_vinculo_solicitado")] public string? TipoVinculoSolicitado { get; set; }
+    public string Status { get; set; } = "pendente";
+    public string? Mensagem { get; set; }
+    [Column("respondido_por")] public Guid? RespondidoPor { get; set; }
+    [Column("respondido_em")] public DateTime? RespondidoEm { get; set; }
+    [Column("created_by")] public Guid? CreatedBy { get; set; }
+    [Column("created_at")] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    [Column("updated_at")] public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+}
+
+[Table("contas_vinculos")]
+public class ContaVinculo
+{
+    [Key] public Guid Id { get; set; } = Guid.NewGuid();
+    [Column("conta_gerente_id")] public Guid ContaGerenteId { get; set; }
+    [Column("conta_alvo_id")] public Guid ContaAlvoId { get; set; }
+    [Column("tipo_vinculo")] public string TipoVinculo { get; set; } = "gerenciamento";
+    public string Status { get; set; } = "ativo";
+    public bool Principal { get; set; } = false;
+    public string Origem { get; set; } = "manual";
+    [Column("solicitacao_id")] public Guid? SolicitacaoId { get; set; }
+    [Column("created_by")] public Guid? CreatedBy { get; set; }
+    [Column("created_at")] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    [Column("updated_at")] public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+}
+
 [Table("audit_logs")]
 public class AuditLog
 {
