@@ -5,12 +5,15 @@ import { ConversationList } from "@/components/crm/ConversationList";
 import { ChatPanel } from "@/components/crm/ChatPanel";
 import { LeadPanel } from "@/components/crm/LeadPanel";
 import { useActiveAccount } from "@/contexts/ActiveAccountContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { getActiveRole } from "@/lib/permissions";
 
 import type { Canal, Conversa, Lead, Mensagem } from "@/lib/crm-types";
 import { toast } from "sonner";
 
 export default function Index() {
   const { scopedContaIds, activeContaId, contas } = useActiveAccount();
+  const { usuarioId } = useAuth();
   const [conversas, setConversas] = useState<Conversa[]>([]);
   const [canais, setCanais] = useState<Canal[]>([]);
   const [canalContas, setCanalContas] = useState<Record<string, string[]>>({}); // canal_id -> [conta_filha_id]
@@ -48,6 +51,7 @@ export default function Index() {
     ultima_mensagem_em: c.ultima_mensagem_em ?? c.ultimaMensagemEm ?? null,
     nao_lidas: c.nao_lidas ?? c.naoLidas ?? 0,
     conta_filha_pendente: c.conta_filha_pendente ?? c.contaFilhaPendente ?? false,
+    responsavel_id: c.responsavel_id ?? c.responsavelId ?? null,
     lead: c.lead ?? undefined,
     canal: c.canal ?? undefined,
   });
@@ -103,13 +107,23 @@ export default function Index() {
       conv.lead = leadsMap[lid];
       return conv;
     }).sort((a, b) => {
+      // Pendentes sempre no topo
       const ap = a.conta_filha_pendente ? 1 : 0;
       const bp = b.conta_filha_pendente ? 1 : 0;
       if (ap !== bp) return bp - ap;
-      return (b.lead?.score ?? 0) - (a.lead?.score ?? 0);
+      // Depois: mais recente primeiro
+      const ta = a.ultima_mensagem_em ? new Date(a.ultima_mensagem_em).getTime() : 0;
+      const tb = b.ultima_mensagem_em ? new Date(b.ultima_mensagem_em).getTime() : 0;
+      return tb - ta;
     });
 
-    setConversas(list);
+    // RF-159: atendente vê apenas suas conversas ou sem responsável
+    const activeRole = getActiveRole();
+    const visibleList = activeRole === "atendente" && usuarioId
+      ? list.filter((c) => c.responsavel_id === usuarioId || c.responsavel_id == null)
+      : list;
+
+    setConversas(visibleList);
   };
 
   useEffect(() => { captureTrackingFromUrl(); loadConversas(); loadCanais(); /* eslint-disable-next-line */ }, [activeContaId, scopedContaIds.join(",")]);

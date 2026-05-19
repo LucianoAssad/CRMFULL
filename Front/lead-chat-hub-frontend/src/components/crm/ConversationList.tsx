@@ -247,6 +247,8 @@ type BadgeSpec = { key: string; label: string; className: string };
 
 function buildBadges(c: Conversa, foraJanela: boolean, hasResponsavel: boolean): BadgeSpec[] {
   const all: BadgeSpec[] = [];
+
+  // 1. Pendente de conta filha — prioridade máxima
   if (c.conta_filha_pendente) {
     all.push({
       key: "conta",
@@ -254,6 +256,17 @@ function buildBadges(c: Conversa, foraJanela: boolean, hasResponsavel: boolean):
       className: "border-amber-500/50 bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-200",
     });
   }
+
+  // 2. Status da conversa — somente se diferente de "aberta" (estado normal)
+  if (c.status && c.status !== "aberta") {
+    all.push({
+      key: "status",
+      label: CONVERSA_STATUS_LABEL[c.status] ?? c.status,
+      className: "border-border bg-muted text-muted-foreground",
+    });
+  }
+
+  // 3. Erro de envio
   if ((c as any).erro_envio) {
     all.push({
       key: "erro",
@@ -261,34 +274,9 @@ function buildBadges(c: Conversa, foraJanela: boolean, hasResponsavel: boolean):
       className: "border-destructive/40 bg-destructive/10 text-destructive",
     });
   }
-  if (foraJanela) {
-    all.push({
-      key: "fora24h",
-      label: "Fora 24h",
-      className: "border-amber-500/40 bg-amber-50 text-amber-800 dark:bg-amber-950/30 dark:text-amber-300",
-    });
-  }
-  if (c.prioridade === "urgente") {
-    all.push({
-      key: "urgente",
-      label: "Urgente",
-      className: "border-destructive/40 bg-destructive/10 text-destructive",
-    });
-  }
-  if (!hasResponsavel) {
-    all.push({
-      key: "sem_resp",
-      label: "Sem responsável",
-      className: "border-warning/30 bg-warning/10 text-warning",
-    });
-  }
-  // Canal simplificado (apenas se ainda houver espaço)
-  const tipo = c.canal?.tipo;
-  if (tipo === "whatsapp") {
-    all.push({ key: "canal", label: "WhatsApp", className: "border-border bg-muted text-muted-foreground" });
-  } else if (tipo === "webchat") {
-    all.push({ key: "canal", label: "Webchat", className: "border-border bg-muted text-muted-foreground" });
-  }
+
+  // Ocultos (não exibir): canal/provider técnico, score, campanha — apenas os 3 acima são permitidos
+  // Máximo 2 badges visíveis
   return all.slice(0, 2);
 }
 

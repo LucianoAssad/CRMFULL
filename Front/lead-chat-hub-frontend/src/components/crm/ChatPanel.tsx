@@ -3,6 +3,7 @@ import {
   Send, Phone, MoreVertical, MessageCircle, AlertTriangle, FileText, UserPlus, Zap, Clock,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -99,7 +100,7 @@ export function ChatPanel({ conversa, mensagens, onSend, onSendTemplate, contasF
   }, [conversa?.responsavel_id]);
 
   const isWhatsapp = conversa?.canal?.tipo === "whatsapp";
-  const isOficial = isWhatsapp && conversa?.canal?.provider === "cloud_api";
+  const isOficial = isWhatsapp && (conversa?.canal?.provider === "cloud_api" || conversa?.canal?.provider === "whatsapp_oficial");
   const isNaoOficial = isWhatsapp && !isOficial;
   const lastInbound = useMemo(() => {
     const inbound = mensagens.filter((m) => m.direcao === "inbound");
@@ -292,6 +293,15 @@ export function ChatPanel({ conversa, mensagens, onSend, onSendTemplate, contasF
           contas={contasFilhasDoCanal || []}
           onAssign={onAtribuirContaFilha}
         />
+      )}
+
+      {foraDaJanela && (
+        <Alert variant="destructive" className="rounded-none border-x-0 border-t-0">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            ⏰ Janela de 24h encerrada. Use um template aprovado para retomar o contato.
+          </AlertDescription>
+        </Alert>
       )}
 
       <div className="scrollbar-thin chat-bg-pattern flex-1 overflow-y-auto p-4">
