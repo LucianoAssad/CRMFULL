@@ -13,7 +13,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { MessageSquare, Pencil, Eye, Plus, Users, CheckCircle2, TrendingUp, DollarSign, MessageCircleOff } from "lucide-react";
+import { MessageSquare, Pencil, Eye, Plus, Users, CheckCircle2, TrendingUp, DollarSign, MessageCircleOff, Download } from "lucide-react";
+import { exportToCsv } from "@/lib/export-csv";
 import { VendaDialog } from "@/components/crm/VendaDialog";
 import { IdentidadesLista } from "@/components/crm/IdentidadesLista";
 import { OportunidadesLead } from "@/components/crm/OportunidadesLead";
@@ -253,7 +254,21 @@ export default function Leads() {
           <p className="text-sm text-muted-foreground">Gerencie contatos, oportunidades e clientes desta conta.</p>
           {activeConta && <p className="text-xs text-muted-foreground mt-1">Conta ativa: {activeConta.nome}</p>}
         </div>
-        <Button onClick={() => setCreateOpen(true)}><Plus className="h-4 w-4 mr-1" /> Cadastrar lead/cliente</Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => exportToCsv("leads", filtered.map((l) => ({
+            nome: l.nome,
+            telefone: l.telefone,
+            telefone2: l.telefone2,
+            email: l.email,
+            origem: l.origem,
+            status: l.status,
+            utm_campaign: l.utm_campaign,
+            convertido_em: l.status === "convertido" ? l.updated_at ?? "" : "",
+            valor_estimado: l.valor_estimado,
+            created_at: l.created_at,
+          })))}><Download className="mr-2 h-4 w-4" /> Exportar CSV</Button>
+          <Button onClick={() => setCreateOpen(true)}><Plus className="h-4 w-4 mr-1" /> Cadastrar lead/cliente</Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">

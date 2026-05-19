@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Plus, Search, ShoppingCart, Target, Sparkles } from "lucide-react";
+import { Plus, Search, ShoppingCart, Target, Sparkles, Download } from "lucide-react";
+import { exportToCsv } from "@/lib/export-csv";
 import { supabase } from "@/integrations/supabase/client";
 import { useActiveAccount } from "@/contexts/ActiveAccountContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -389,7 +390,17 @@ export default function Vendas() {
           <h1 className="text-2xl font-semibold">Vendas</h1>
           <p className="text-sm text-muted-foreground">Acompanhe as vendas registradas nesta conta operacional.</p>
         </div>
-        <Button onClick={openNew}><Plus className="mr-2 h-4 w-4" /> Nova venda</Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => exportToCsv("vendas", filtradas.map((v) => ({
+            lead_nome: v.leads?.nome ?? "",
+            produto: (v.itens_venda || []).map((i) => i.nome_produto).filter(Boolean).join(", "),
+            valor_total: v.valor_total,
+            status: v.status,
+            origem: v.leads?.origem ?? "",
+            data_venda: v.data_venda,
+          })))}><Download className="mr-2 h-4 w-4" /> Exportar CSV</Button>
+          <Button onClick={openNew}><Plus className="mr-2 h-4 w-4" /> Nova venda</Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">

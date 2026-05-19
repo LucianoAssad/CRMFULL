@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
-import { Plus, Pencil, Trash2, ArrowUp, ArrowDown, GitBranch, Sparkles, Search, MessageSquare, User, ShoppingCart, Trophy, X } from "lucide-react";
+import { Plus, Pencil, Trash2, ArrowUp, ArrowDown, GitBranch, Sparkles, Search, MessageSquare, User, ShoppingCart, Trophy, X, Download } from "lucide-react";
+import { exportToCsv } from "@/lib/export-csv";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -591,6 +592,16 @@ export default function Pipeline() {
                     <SelectItem value="90d">Últimos 90 dias</SelectItem>
                   </SelectContent>
                 </Select>
+                <Button variant="outline" onClick={() => exportToCsv("pipeline", oportunidadesFiltradas.map((o) => ({
+                  titulo: o.titulo,
+                  lead: leadsMap[o.lead_id]?.nome ?? "",
+                  status: o.status,
+                  etapa: etapas.find((e) => e.id === o.etapa_id)?.nome ?? "",
+                  valor_estimado: o.valor_estimado,
+                  origem: o.origem,
+                  canal_origem: o.canal_origem,
+                  created_at: o.created_at,
+                })))}><Download className="mr-1 h-4 w-4" /> Exportar CSV</Button>
                 <Button onClick={openNovaOportunidade}><Plus className="mr-1 h-4 w-4" /> Nova oportunidade</Button>
               </div>
 
