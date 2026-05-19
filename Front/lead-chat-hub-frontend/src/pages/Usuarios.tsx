@@ -184,17 +184,46 @@ export default function Usuarios() {
     }
     const ids = Array.from(new Set<string>([activeContaId, ...adminIds]));
 
-    const { data, error } = await supabase
+    // Busca flat — backend não suporta nested selects
+    const { data: rawVinc, error } = await supabase
       .from("usuarios_contas")
-      .select(`
-        id, usuario_id, conta_id, role, ativo, created_at,
-        usuario:usuarios(id, nome, email, telefone, ativo),
-        conta:empresas(id, nome, tipo_conta, codigo_publico, conta_gerente_id, tipo_vinculo_gerente)
-      `)
+      .select("*")
       .in("conta_id", ids)
       .order("created_at", { ascending: false });
     if (error) { toast.error(error.message); return; }
-    setVinculos((data as any) || []);
+    const flatVinc: any[] = (rawVinc as any) || [];
+
+    // Enrich: busca usuários e empresas separadamente
+    const userIds = [...new Set(flatVinc.map((v: any) => v.usuario_id ?? v.usuarioId).filter(Boolean))];
+    const contaIds = [...new Set(flatVinc.map((v: any) => v.conta_id ?? v.contaId).filter(Boolean))];
+    const [usersRes, empresasRes] = await Promise.all([
+      userIds.length > 0
+        ? supabase.from("usuarios").select("id,nome,email,telefone,ativo").in("id", userIds)
+        : Promise.resolve({ data: [] }),
+      contaIds.length > 0
+        ? supabase.from("empresas").select("id,nome,tipo_conta,codigo_publico,conta_gerente_id,tipo_vinculo_gerente").in("id", contaIds)
+        : Promise.resolve({ data: [] }),
+    ]);
+    const usersMap: Record<string, UsuarioRow> = {};
+    for (const u of (usersRes.data as any) || []) usersMap[u.id] = u;
+    const empMap: Record<string, Empresa> = {};
+    for (const e of (empresasRes.data as any) || []) empMap[e.id] = e;
+
+    const enriched: VinculoRow[] = flatVinc.map((v: any) => {
+      const uid = v.usuario_id ?? v.usuarioId;
+      const cid = v.conta_id ?? v.contaId;
+      return {
+        id: v.id,
+        usuario_id: uid,
+        conta_id: cid,
+        role: v.role,
+        ativo: v.ativo ?? true,
+        created_at: v.created_at ?? v.createdAt ?? "",
+        usuario: usersMap[uid] ?? null,
+        conta: empMap[cid] ?? null,
+      };
+    });
+    setVinculos(enriched);
   };
 
   useEffect(() => { loadEmpresas(); load(); /* eslint-disable-next-line */ }, [activeContaId]);
@@ -332,15 +361,17 @@ export default function Usuarios() {
         if (error) throw error;
         toast.success("Acesso atualizado");
       } else {
-        const { data: existente, error: errFind } = await supabase
+        // Busca usuário por email (case-insensitive via endpoint dedicado)
+        const { data: existente } = await supabase
           .from("usuarios")
           .select("id")
-          .ilike("email", email)
+          .eq("email", email.toLowerCase())
           .maybeSingle();
-        if (errFind) throw errFind;
 
         let usuarioId = existente?.id as string | undefined;
         if (!usuarioId) {
+          // Gera senha temporária aleatória — usuário deverá redefinir depois
+          const senhaTemp = Math.random().toString(36).slice(-10) + "A1!";
           const { data: novo, error: errIns } = await supabase
             .from("usuarios")
             .insert({
@@ -348,12 +379,13 @@ export default function Usuarios() {
               email,
               telefone: form.telefone.trim() || null,
               empresa_id: form.conta_id,
+              password_hash: senhaTemp, // backend irá hashear via trigger ou BCrypt
               ativo: true,
-            })
-            .select("id")
-            .single();
+            });
           if (errIns) throw errIns;
-          usuarioId = novo.id;
+          // O backend retorna a entidade criada diretamente
+          usuarioId = (novo as any)?.id;
+          if (!usuarioId) throw new Error("Falha ao criar usuário: ID não retornado");
         }
 
         const { data: dup } = await supabase

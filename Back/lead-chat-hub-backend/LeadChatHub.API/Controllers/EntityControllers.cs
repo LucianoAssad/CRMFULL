@@ -39,6 +39,31 @@ public class UsuariosController : CrudController<Usuario>
         var u = await Db.Usuarios.FirstOrDefaultAsync(x => x.Email.ToLower() == email.ToLower());
         return u == null ? NotFound() : Ok(u);
     }
+
+    /// <summary>
+    /// Override Create to hash password_hash if it looks like a plaintext password.
+    /// Detects bcrypt hashes ($2a$ prefix) and skips hashing if already hashed.
+    /// Also prevents returning the password hash in the response.
+    /// </summary>
+    public override async Task<IActionResult> Create([FromBody] Usuario entity)
+    {
+        if (!string.IsNullOrWhiteSpace(entity.PasswordHash) && !entity.PasswordHash.StartsWith("$2"))
+            entity.PasswordHash = BCrypt.Net.BCrypt.HashPassword(entity.PasswordHash);
+        entity.Email = entity.Email?.Trim().ToLower() ?? "";
+        Db.Usuarios.Add(entity);
+        await Db.SaveChangesAsync();
+        entity.PasswordHash = null; // never return password hash
+        return Created("", entity);
+    }
+
+    public override async Task<IActionResult> GetAll([FromQuery] int limit = 1000, [FromQuery] int offset = 0)
+    {
+        var query = await ApplyTenantScope(Db.Usuarios.AsNoTracking());
+        var items = await query.Skip(offset).Take(limit)
+            .Select(u => new { u.Id, u.Nome, u.Email, u.Telefone, u.Role, u.Ativo, u.EmpresaId, u.CreatedAt })
+            .ToListAsync();
+        return Ok(items);
+    }
 }
 
 // ===================== UsuariosContas =====================
