@@ -392,3 +392,41 @@ public class AuditLogsController : CrudController<AuditLog>
 {
     public AuditLogsController(AppDbContext db) : base(db) { }
 }
+
+// ===================== ConversaNotas =====================
+[ApiController, Route("api/conversa-notas")]
+public class ConversaNotasController : CrudController<ConversaNota>
+{
+    public ConversaNotasController(AppDbContext db) : base(db) { }
+
+    [HttpGet("by-conversa/{conversaId}")]
+    public async Task<IActionResult> GetByConversa(Guid conversaId)
+    {
+        var items = await Db.ConversaNotas
+            .Where(n => n.ConversaId == conversaId)
+            .OrderBy(n => n.CreatedAt)
+            .ToListAsync();
+        return Ok(items);
+    }
+}
+
+// ===================== ConversaoDestinos =====================
+[ApiController, Route("api/conversao-destinos")]
+public class ConversaoDestinosController : CrudController<ConversaoDestino>
+{
+    public ConversaoDestinosController(AppDbContext db) : base(db) { }
+}
+
+// ===================== ExportacoesConversoes =====================
+[ApiController, Route("api/exportacoes-conversoes")]
+public class ExportacoesConversoesController : CrudController<ExportacaoConversao>
+{
+    public ExportacoesConversoesController(AppDbContext db) : base(db) { }
+}
+
+// ===================== ConfiguracoesConversao =====================
+[ApiController, Route("api/configuracoes-conversao")]
+public class ConfiguracoesConversaoController : CrudController<ConfiguracaoConversao>
+{
+    public ConfiguracoesConversaoController(AppDbContext db) : base(db) { }
+}

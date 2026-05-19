@@ -186,6 +186,35 @@ using (var scope = app.Services.CreateScope())
                 ALTER TABLE leads ADD COLUMN IF NOT EXISTS cidade varchar(100) NULL;
                 ALTER TABLE leads ADD COLUMN IF NOT EXISTS estado varchar(50) NULL;
 
+                -- empresas: campos adicionais
+                ALTER TABLE empresas ADD COLUMN IF NOT EXISTS tipo_vinculo_gerente varchar(50) NULL;
+                ALTER TABLE empresas ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT NOW();
+
+                -- conversas: campos adicionais
+                ALTER TABLE conversas ADD COLUMN IF NOT EXISTS prioridade varchar(20) NOT NULL DEFAULT 'normal';
+                ALTER TABLE conversas ADD COLUMN IF NOT EXISTS responsavel_id uuid NULL;
+                ALTER TABLE conversas ADD COLUMN IF NOT EXISTS erro_envio boolean NOT NULL DEFAULT false;
+
+                -- perfil_comercial: campos adicionais
+                ALTER TABLE perfil_comercial ADD COLUMN IF NOT EXISTS nome_unidade varchar(200) NULL;
+                ALTER TABLE perfil_comercial ADD COLUMN IF NOT EXISTS nome_fantasia varchar(200) NULL;
+                ALTER TABLE perfil_comercial ADD COLUMN IF NOT EXISTS razao_social varchar(300) NULL;
+                ALTER TABLE perfil_comercial ADD COLUMN IF NOT EXISTS cnpj varchar(20) NULL;
+                ALTER TABLE perfil_comercial ADD COLUMN IF NOT EXISTS whatsapp varchar(50) NULL;
+                ALTER TABLE perfil_comercial ADD COLUMN IF NOT EXISTS endereco_logradouro varchar(200) NULL;
+                ALTER TABLE perfil_comercial ADD COLUMN IF NOT EXISTS endereco_numero varchar(20) NULL;
+                ALTER TABLE perfil_comercial ADD COLUMN IF NOT EXISTS endereco_complemento varchar(100) NULL;
+                ALTER TABLE perfil_comercial ADD COLUMN IF NOT EXISTS endereco_bairro varchar(100) NULL;
+                ALTER TABLE perfil_comercial ADD COLUMN IF NOT EXISTS endereco_cidade varchar(100) NULL;
+                ALTER TABLE perfil_comercial ADD COLUMN IF NOT EXISTS endereco_uf varchar(10) NULL;
+                ALTER TABLE perfil_comercial ADD COLUMN IF NOT EXISTS endereco_cep varchar(20) NULL;
+                ALTER TABLE perfil_comercial ADD COLUMN IF NOT EXISTS termos_orcamento_padrao text NULL;
+                ALTER TABLE perfil_comercial ADD COLUMN IF NOT EXISTS observacao_orcamento_padrao text NULL;
+                ALTER TABLE perfil_comercial ADD COLUMN IF NOT EXISTS validade_orcamento_padrao_dias int NOT NULL DEFAULT 30;
+                ALTER TABLE perfil_comercial ADD COLUMN IF NOT EXISTS formas_pagamento_padrao jsonb NULL;
+                ALTER TABLE perfil_comercial ADD COLUMN IF NOT EXISTS parcelamento_padrao varchar(200) NULL;
+                ALTER TABLE perfil_comercial ADD COLUMN IF NOT EXISTS ativo boolean NOT NULL DEFAULT true;
+
                 -- orcamentos: renomear tabela itens_orcamento → orcamento_itens se necessário
                 DO $$ BEGIN
                     IF EXISTS (SELECT FROM pg_tables WHERE tablename = 'itens_orcamento') AND
@@ -282,6 +311,73 @@ using (var scope = app.Services.CreateScope())
                     origem varchar(50) NOT NULL DEFAULT 'manual',
                     solicitacao_id uuid NULL,
                     created_by uuid NULL,
+                    created_at timestamptz NOT NULL DEFAULT NOW(),
+                    updated_at timestamptz NOT NULL DEFAULT NOW()
+                );
+
+                -- conversa_notas
+                CREATE TABLE IF NOT EXISTS conversa_notas (
+                    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+                    empresa_id uuid NOT NULL,
+                    conversa_id uuid NOT NULL,
+                    usuario_id uuid NULL,
+                    conteudo text NOT NULL DEFAULT '',
+                    privada boolean NOT NULL DEFAULT true,
+                    created_at timestamptz NOT NULL DEFAULT NOW(),
+                    updated_at timestamptz NOT NULL DEFAULT NOW()
+                );
+
+                -- conversao_destinos
+                CREATE TABLE IF NOT EXISTS conversao_destinos (
+                    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+                    empresa_id uuid NOT NULL,
+                    conversao_id uuid NOT NULL,
+                    plataforma varchar(50) NOT NULL DEFAULT '',
+                    metodo_envio varchar(50) NOT NULL DEFAULT 'csv',
+                    tipo_evento_plataforma varchar(100) NULL,
+                    status_envio varchar(50) NOT NULL DEFAULT 'pendente',
+                    identificadores jsonb NULL,
+                    payload_preview jsonb NULL,
+                    erro text NULL,
+                    exportacao_id uuid NULL,
+                    enviado_em timestamptz NULL,
+                    created_at timestamptz NOT NULL DEFAULT NOW(),
+                    updated_at timestamptz NOT NULL DEFAULT NOW()
+                );
+
+                -- exportacoes_conversoes
+                CREATE TABLE IF NOT EXISTS exportacoes_conversoes (
+                    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+                    empresa_id uuid NOT NULL,
+                    plataforma varchar(50) NOT NULL DEFAULT '',
+                    metodo_envio varchar(50) NOT NULL DEFAULT 'csv',
+                    status varchar(30) NOT NULL DEFAULT 'pendente',
+                    arquivo_url text NULL,
+                    google_sheet_url text NULL,
+                    total_registros int NOT NULL DEFAULT 0,
+                    total_sucesso int NOT NULL DEFAULT 0,
+                    total_erro int NOT NULL DEFAULT 0,
+                    filtros jsonb NULL,
+                    created_by uuid NULL,
+                    created_at timestamptz NOT NULL DEFAULT NOW(),
+                    updated_at timestamptz NOT NULL DEFAULT NOW()
+                );
+
+                -- configuracoes_conversao
+                CREATE TABLE IF NOT EXISTS configuracoes_conversao (
+                    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+                    empresa_id uuid NOT NULL,
+                    plataforma varchar(50) NOT NULL DEFAULT '',
+                    metodo_padrao varchar(50) NOT NULL DEFAULT 'csv',
+                    google_customer_id varchar(100) NULL,
+                    google_conversion_action_id varchar(100) NULL,
+                    meta_pixel_id varchar(100) NULL,
+                    meta_dataset_id varchar(100) NULL,
+                    tiktok_advertiser_id varchar(100) NULL,
+                    tiktok_event_source_id varchar(100) NULL,
+                    token_status varchar(30) NOT NULL DEFAULT 'nao_configurado',
+                    ativo boolean NOT NULL DEFAULT true,
+                    configuracoes jsonb NULL,
                     created_at timestamptz NOT NULL DEFAULT NOW(),
                     updated_at timestamptz NOT NULL DEFAULT NOW()
                 );

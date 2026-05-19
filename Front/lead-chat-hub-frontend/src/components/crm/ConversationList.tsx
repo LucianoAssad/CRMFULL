@@ -70,6 +70,8 @@ export function ConversationList({ conversas, canais, selectedId, onSelect }: Pr
       const matchesQ =
         !q ||
         c.lead?.nome.toLowerCase().includes(q.toLowerCase()) ||
+        c.lead?.telefone?.includes(q) ||
+        c.lead?.telefone?.replace(/\D/g, "").includes(q.replace(/\D/g, "")) ||
         c.ultima_mensagem?.toLowerCase().includes(q.toLowerCase());
       const matchesCanal = canalFilter === "all" || c.canal_id === canalFilter;
       const matchesStatus = statusFilter === "all" || c.status === statusFilter;

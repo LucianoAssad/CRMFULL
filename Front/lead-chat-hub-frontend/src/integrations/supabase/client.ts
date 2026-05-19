@@ -90,6 +90,10 @@ const TABLE_ROUTE_MAP: Record<string, string> = {
   solicitacoes_vinculo_conta: "solicitacoes-vinculo-conta",
   contas_vinculos: "contas-vinculos",
   audit_logs: "audit-logs",
+  conversa_notas: "conversa-notas",
+  conversao_destinos: "conversao-destinos",
+  exportacoes_conversoes: "exportacoes-conversoes",
+  configuracoes_conversao: "configuracoes-conversao",
 };
 
 function getRoute(table: string): string {

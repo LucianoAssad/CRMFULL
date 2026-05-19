@@ -17,8 +17,10 @@ public class Empresa
     public bool Ativo { get; set; } = true;
     [Column("tipo_conta")][JsonPropertyName("tipo_conta")] public string TipoConta { get; set; } = "filha";
     [Column("conta_gerente_id")][JsonPropertyName("conta_gerente_id")] public Guid? ContaGerenteId { get; set; }
+    [Column("tipo_vinculo_gerente")][JsonPropertyName("tipo_vinculo_gerente")] public string? TipoVinculoGerente { get; set; }
     [Column("codigo_publico")][JsonPropertyName("codigo_publico")] public string? CodigoPublico { get; set; }
     [Column("created_at")][JsonPropertyName("created_at")] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    [Column("updated_at")][JsonPropertyName("updated_at")] public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
     [ForeignKey("ContaGerenteId")] public Empresa? ContaGerente { get; set; }
     public ICollection<Empresa> ContasFilhas { get; set; } = new List<Empresa>();
@@ -148,10 +150,13 @@ public class Conversa
     [Column("lead_id")] public Guid LeadId { get; set; }
     [Column("canal_id")] public Guid? CanalId { get; set; }
     public string Status { get; set; } = "aberta";
+    public string? Prioridade { get; set; } = "normal";
+    [Column("responsavel_id")] public Guid? ResponsavelId { get; set; }
     [Column("ultima_mensagem")] public string? UltimaMensagem { get; set; }
     [Column("ultima_mensagem_em")] public DateTime? UltimaMensagemEm { get; set; } = DateTime.UtcNow;
     [Column("nao_lidas")] public int NaoLidas { get; set; } = 0;
     [Column("conta_filha_pendente")] public bool ContaFilhaPendente { get; set; } = false;
+    [Column("erro_envio")] public bool ErroEnvio { get; set; } = false;
     [Column("created_at")] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     [Column("updated_at")] public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
@@ -569,13 +574,31 @@ public class PerfilComercial
     [Key] public Guid Id { get; set; } = Guid.NewGuid();
     [Column("empresa_id")] public Guid EmpresaId { get; set; }
     [Column("nome_empresa")] public string? NomeEmpresa { get; set; }
+    [Column("nome_unidade")] public string? NomeUnidade { get; set; }
+    [Column("nome_fantasia")] public string? NomeFantasia { get; set; }
+    [Column("razao_social")] public string? RazaoSocial { get; set; }
+    public string? Cnpj { get; set; }
     public string? Descricao { get; set; }
     [Column("logo_url")] public string? LogoUrl { get; set; }
     [Column("cor_primaria")] public string? CorPrimaria { get; set; } = "#3b82f6";
+    public string? Whatsapp { get; set; }
     public string? Telefone { get; set; }
     public string? Email { get; set; }
     public string? Site { get; set; }
     public string? Endereco { get; set; }
+    [Column("endereco_logradouro")] public string? EnderecoLogradouro { get; set; }
+    [Column("endereco_numero")] public string? EnderecoNumero { get; set; }
+    [Column("endereco_complemento")] public string? EnderecoComplemento { get; set; }
+    [Column("endereco_bairro")] public string? EnderecoBairro { get; set; }
+    [Column("endereco_cidade")] public string? EnderecoCidade { get; set; }
+    [Column("endereco_uf")] public string? EnderecoUf { get; set; }
+    [Column("endereco_cep")] public string? EnderecoCep { get; set; }
+    [Column("termos_orcamento_padrao")] public string? TermosOrcamentoPadrao { get; set; }
+    [Column("observacao_orcamento_padrao")] public string? ObservacaoOrcamentoPadrao { get; set; }
+    [Column("validade_orcamento_padrao_dias")] public int ValidadeOrcamentoPadraoDias { get; set; } = 30;
+    [Column("formas_pagamento_padrao")] public string? FormasPagamentoPadrao { get; set; } // JSON
+    [Column("parcelamento_padrao")] public string? ParcelamentoPadrao { get; set; }
+    public bool Ativo { get; set; } = true;
     [Column("created_at")] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     [Column("updated_at")] public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }
@@ -638,4 +661,75 @@ public class AuditLog
     [Column("dados_depois")] public string? DadosDepois { get; set; }
     public string? Ip { get; set; }
     [Column("created_at")] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+}
+
+[Table("conversa_notas")]
+public class ConversaNota
+{
+    [Key] public Guid Id { get; set; } = Guid.NewGuid();
+    [Column("empresa_id")] public Guid EmpresaId { get; set; }
+    [Column("conversa_id")] public Guid ConversaId { get; set; }
+    [Column("usuario_id")] public Guid? UsuarioId { get; set; }
+    public string Conteudo { get; set; } = "";
+    public bool Privada { get; set; } = true;
+    [Column("created_at")] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    [Column("updated_at")] public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+}
+
+[Table("conversao_destinos")]
+public class ConversaoDestino
+{
+    [Key] public Guid Id { get; set; } = Guid.NewGuid();
+    [Column("empresa_id")] public Guid EmpresaId { get; set; }
+    [Column("conversao_id")] public Guid ConversaoId { get; set; }
+    public string Plataforma { get; set; } = "";
+    [Column("metodo_envio")] public string MetodoEnvio { get; set; } = "csv";
+    [Column("tipo_evento_plataforma")] public string? TipoEventoPlataforma { get; set; }
+    [Column("status_envio")] public string StatusEnvio { get; set; } = "pendente";
+    public string? Identificadores { get; set; } // JSON
+    [Column("payload_preview")] public string? PayloadPreview { get; set; } // JSON
+    public string? Erro { get; set; }
+    [Column("exportacao_id")] public Guid? ExportacaoId { get; set; }
+    [Column("enviado_em")] public DateTime? EnviadoEm { get; set; }
+    [Column("created_at")] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    [Column("updated_at")] public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+}
+
+[Table("exportacoes_conversoes")]
+public class ExportacaoConversao
+{
+    [Key] public Guid Id { get; set; } = Guid.NewGuid();
+    [Column("empresa_id")] public Guid EmpresaId { get; set; }
+    public string Plataforma { get; set; } = "";
+    [Column("metodo_envio")] public string MetodoEnvio { get; set; } = "csv";
+    public string Status { get; set; } = "pendente";
+    [Column("arquivo_url")] public string? ArquivoUrl { get; set; }
+    [Column("google_sheet_url")] public string? GoogleSheetUrl { get; set; }
+    [Column("total_registros")] public int TotalRegistros { get; set; } = 0;
+    [Column("total_sucesso")] public int TotalSucesso { get; set; } = 0;
+    [Column("total_erro")] public int TotalErro { get; set; } = 0;
+    public string? Filtros { get; set; } // JSON
+    [Column("created_by")] public Guid? CreatedBy { get; set; }
+    [Column("created_at")] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    [Column("updated_at")] public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+}
+
+[Table("configuracoes_conversao")]
+public class ConfiguracaoConversao
+{
+    [Key] public Guid Id { get; set; } = Guid.NewGuid();
+    [Column("empresa_id")] public Guid EmpresaId { get; set; }
+    public string Plataforma { get; set; } = "";
+    [Column("metodo_padrao")] public string MetodoPadrao { get; set; } = "csv";
+    [Column("google_customer_id")] public string? GoogleCustomerId { get; set; }
+    [Column("google_conversion_action_id")] public string? GoogleConversionActionId { get; set; }
+    [Column("meta_pixel_id")] public string? MetaPixelId { get; set; }
+    [Column("meta_dataset_id")] public string? MetaDatasetId { get; set; }
+    [Column("tiktok_advertiser_id")] public string? TiktokAdvertiserId { get; set; }
+    [Column("tiktok_event_source_id")] public string? TiktokEventSourceId { get; set; }
+    [Column("token_status")] public string TokenStatus { get; set; } = "nao_configurado";
+    public bool Ativo { get; set; } = true;
+    public string? Configuracoes { get; set; } // JSON
+    [Column("created_at")] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    [Column("updated_at")] public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }

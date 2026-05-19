@@ -42,6 +42,10 @@ public class AppDbContext : DbContext
     public DbSet<SolicitacaoVinculoConta> SolicitacoesVinculoConta => Set<SolicitacaoVinculoConta>();
     public DbSet<ContaVinculo> ContasVinculos => Set<ContaVinculo>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<ConversaNota> ConversaNotas => Set<ConversaNota>();
+    public DbSet<ConversaoDestino> ConversaoDestinos => Set<ConversaoDestino>();
+    public DbSet<ExportacaoConversao> ExportacoesConversoes => Set<ExportacaoConversao>();
+    public DbSet<ConfiguracaoConversao> ConfiguracoesConversao => Set<ConfiguracaoConversao>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

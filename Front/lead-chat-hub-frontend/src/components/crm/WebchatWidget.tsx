@@ -52,16 +52,6 @@ export function WebchatWidget() {
 
   const isEmail = (v: string) => /\S+@\S+\.\S+/.test(v);
 
-  const getUtm = () => {
-    const p = new URLSearchParams(window.location.search);
-    return {
-      utm_source: p.get("utm_source"),
-      utm_medium: p.get("utm_medium"),
-      utm_campaign: p.get("utm_campaign"),
-      gclid: p.get("gclid"),
-    };
-  };
-
   const enviar = async () => {
     const parsed = formSchema.safeParse({ nome, contato, mensagem });
     if (!parsed.success) {
