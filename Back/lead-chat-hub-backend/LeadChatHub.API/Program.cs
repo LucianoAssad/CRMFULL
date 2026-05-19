@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -7,6 +8,26 @@ using Microsoft.OpenApi.Models;
 using LeadChatHub.API.Hubs;
 using LeadChatHub.Application.Services;
 using LeadChatHub.Infrastructure.Data;
+
+/// <summary>
+/// Allows JSON objects/arrays sent from the client to be stored as their serialized string
+/// in C# string properties (e.g. Filtros = "{}", Variaveis = "[]").
+/// Without this, System.Text.Json throws when the JSON value is not a string literal.
+/// </summary>
+public class JsonObjectToStringConverter : JsonConverter<string>
+{
+    public override string? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        return reader.TokenType switch
+        {
+            JsonTokenType.String => reader.GetString(),
+            JsonTokenType.Null => null,
+            _ => JsonSerializer.Serialize(JsonDocument.ParseValue(ref reader).RootElement)
+        };
+    }
+    public override void Write(Utf8JsonWriter writer, string value, JsonSerializerOptions options)
+        => writer.WriteStringValue(value);
+}
 
 // v2
 var builder = WebApplication.CreateBuilder(args);
@@ -79,6 +100,8 @@ builder.Services.AddControllers()
         opts.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
         opts.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
         opts.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+        // Allow JSON objects/arrays to be deserialized into string properties (e.g. Filtros, Variaveis)
+        opts.JsonSerializerOptions.Converters.Add(new JsonObjectToStringConverter());
     });
 
 builder.Services.AddSignalR();
