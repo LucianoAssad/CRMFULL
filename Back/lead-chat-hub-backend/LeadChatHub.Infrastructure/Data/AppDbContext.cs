@@ -29,7 +29,7 @@ public class AppDbContext : DbContext
     public DbSet<OptOut> OptOuts => Set<OptOut>();
     public DbSet<EventoConversa> EventosConversa => Set<EventoConversa>();
     public DbSet<Orcamento> Orcamentos => Set<Orcamento>();
-    public DbSet<ItemOrcamento> ItensOrcamento => Set<ItemOrcamento>();
+    public DbSet<OrcamentoItem> OrcamentoItens => Set<OrcamentoItem>();
     public DbSet<NotaInterna> NotasInternas => Set<NotaInterna>();
     public DbSet<RespostaRapida> RespostasRapidas => Set<RespostaRapida>();
     public DbSet<LeadIdentidade> LeadIdentidades => Set<LeadIdentidade>();

@@ -407,30 +407,60 @@ public class Orcamento
 {
     [Key] public Guid Id { get; set; } = Guid.NewGuid();
     [Column("empresa_id")] public Guid EmpresaId { get; set; }
-    [Column("lead_id")] public Guid LeadId { get; set; }
+    [Column("lead_id")] public Guid? LeadId { get; set; }
     [Column("conversa_id")] public Guid? ConversaId { get; set; }
-    public string? Numero { get; set; }
-    [Column("valor_total")] public decimal ValorTotal { get; set; } = 0;
+    [Column("oportunidade_id")] public Guid? OportunidadeId { get; set; }
+    [Column("operador_id")] public Guid? OperadorId { get; set; }
+    [Column("operador_nome")] public string? OperadorNome { get; set; }
+    [Column("vendedor_id")] public Guid? VendedorId { get; set; }
+    public int Numero { get; set; } = 0;
+    public string? Titulo { get; set; }
     public string Status { get; set; } = "rascunho";
-    [Column("validade_dias")] public int? ValidadeDias { get; set; } = 30;
-    public string? Observacoes { get; set; }
+    public string Moeda { get; set; } = "BRL";
+    public decimal Subtotal { get; set; } = 0;
+    [Column("desconto_total")] public decimal DescontoTotal { get; set; } = 0;
+    [Column("taxas_total")] public decimal TaxasTotal { get; set; } = 0;
+    [Column("valor_total")] public decimal ValorTotal { get; set; } = 0;
+    [Column("validade_em")] public DateTime? ValidadeEm { get; set; }
+    [Column("condicoes_pagamento")] public string? CondicoesPagamento { get; set; }
+    public string? Termos { get; set; }
+    [Column("observacoes_cliente")] public string? ObservacoesCliente { get; set; }
+    [Column("observacoes_internas")] public string? ObservacoesInternas { get; set; }
+    [Column("mensagem_chat")] public string? MensagemChat { get; set; }
+    [Column("pdf_url")] public string? PdfUrl { get; set; }
+    [Column("pdf_gerado_em")] public DateTime? PdfGeradoEm { get; set; }
+    [Column("enviado_em")] public DateTime? EnviadoEm { get; set; }
+    [Column("convertido_venda_id")] public Guid? ConvertidoVendaId { get; set; }
+    [Column("created_by")] public Guid? CreatedBy { get; set; }
+    [Column("updated_by")] public Guid? UpdatedBy { get; set; }
     [Column("created_at")] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     [Column("updated_at")] public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
-    public ICollection<ItemOrcamento> Itens { get; set; } = new List<ItemOrcamento>();
+    public ICollection<OrcamentoItem> Itens { get; set; } = new List<OrcamentoItem>();
 }
 
-[Table("itens_orcamento")]
-public class ItemOrcamento
+[Table("orcamento_itens")]
+public class OrcamentoItem
 {
     [Key] public Guid Id { get; set; } = Guid.NewGuid();
     [Column("orcamento_id")] public Guid OrcamentoId { get; set; }
-    [Column("produto_servico_id")] public Guid? ProdutoServicoId { get; set; }
-    [Column("nome_produto")] public string? NomeProduto { get; set; }
+    [Column("empresa_id")] public Guid EmpresaId { get; set; }
+    [Column("produto_id")] public Guid? ProdutoId { get; set; }
+    public string? Categoria { get; set; }
+    public string Descricao { get; set; } = "";
+    public string? Servico { get; set; }
     public decimal Quantidade { get; set; } = 1;
+    public string Unidade { get; set; } = "un";
+    public string? Medida { get; set; }
+    public string? Material { get; set; }
+    [Column("nivel_sujeira")] public string? NivelSujeira { get; set; }
     [Column("valor_unitario")] public decimal ValorUnitario { get; set; } = 0;
+    public decimal Desconto { get; set; } = 0;
     [Column("valor_total")] public decimal ValorTotal { get; set; } = 0;
+    [Column("observacao_tecnica")] public string? ObservacaoTecnica { get; set; }
+    public int Ordem { get; set; } = 0;
     [Column("created_at")] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    [Column("updated_at")] public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
     [ForeignKey("OrcamentoId")] public Orcamento? Orcamento { get; set; }
 }

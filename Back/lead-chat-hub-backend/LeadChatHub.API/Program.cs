@@ -176,6 +176,7 @@ using (var scope = app.Services.CreateScope())
         using (var cmd = conn.CreateCommand())
         {
             cmd.CommandText = @"
+                -- leads
                 ALTER TABLE leads ADD COLUMN IF NOT EXISTS telefone2 varchar(50) NULL;
                 ALTER TABLE leads ADD COLUMN IF NOT EXISTS complemento varchar(100) NULL;
                 ALTER TABLE leads ADD COLUMN IF NOT EXISTS cep varchar(20) NULL;
@@ -184,6 +185,76 @@ using (var scope = app.Services.CreateScope())
                 ALTER TABLE leads ADD COLUMN IF NOT EXISTS bairro varchar(100) NULL;
                 ALTER TABLE leads ADD COLUMN IF NOT EXISTS cidade varchar(100) NULL;
                 ALTER TABLE leads ADD COLUMN IF NOT EXISTS estado varchar(50) NULL;
+
+                -- orcamentos: renomear tabela itens_orcamento → orcamento_itens se necessário
+                DO $$ BEGIN
+                    IF EXISTS (SELECT FROM pg_tables WHERE tablename = 'itens_orcamento') AND
+                       NOT EXISTS (SELECT FROM pg_tables WHERE tablename = 'orcamento_itens') THEN
+                        ALTER TABLE itens_orcamento RENAME TO orcamento_itens;
+                    END IF;
+                END $$;
+
+                -- orcamentos: adicionar colunas faltantes
+                ALTER TABLE orcamentos ADD COLUMN IF NOT EXISTS oportunidade_id uuid NULL;
+                ALTER TABLE orcamentos ADD COLUMN IF NOT EXISTS operador_id uuid NULL;
+                ALTER TABLE orcamentos ADD COLUMN IF NOT EXISTS operador_nome varchar(200) NULL;
+                ALTER TABLE orcamentos ADD COLUMN IF NOT EXISTS vendedor_id uuid NULL;
+                ALTER TABLE orcamentos ADD COLUMN IF NOT EXISTS titulo varchar(300) NULL;
+                ALTER TABLE orcamentos ADD COLUMN IF NOT EXISTS moeda varchar(10) NOT NULL DEFAULT 'BRL';
+                ALTER TABLE orcamentos ADD COLUMN IF NOT EXISTS subtotal numeric(12,2) NOT NULL DEFAULT 0;
+                ALTER TABLE orcamentos ADD COLUMN IF NOT EXISTS desconto_total numeric(12,2) NOT NULL DEFAULT 0;
+                ALTER TABLE orcamentos ADD COLUMN IF NOT EXISTS taxas_total numeric(12,2) NOT NULL DEFAULT 0;
+                ALTER TABLE orcamentos ADD COLUMN IF NOT EXISTS validade_em timestamptz NULL;
+                ALTER TABLE orcamentos ADD COLUMN IF NOT EXISTS condicoes_pagamento text NULL;
+                ALTER TABLE orcamentos ADD COLUMN IF NOT EXISTS termos text NULL;
+                ALTER TABLE orcamentos ADD COLUMN IF NOT EXISTS observacoes_cliente text NULL;
+                ALTER TABLE orcamentos ADD COLUMN IF NOT EXISTS observacoes_internas text NULL;
+                ALTER TABLE orcamentos ADD COLUMN IF NOT EXISTS mensagem_chat text NULL;
+                ALTER TABLE orcamentos ADD COLUMN IF NOT EXISTS pdf_url text NULL;
+                ALTER TABLE orcamentos ADD COLUMN IF NOT EXISTS pdf_gerado_em timestamptz NULL;
+                ALTER TABLE orcamentos ADD COLUMN IF NOT EXISTS enviado_em timestamptz NULL;
+                ALTER TABLE orcamentos ADD COLUMN IF NOT EXISTS convertido_venda_id uuid NULL;
+                ALTER TABLE orcamentos ADD COLUMN IF NOT EXISTS created_by uuid NULL;
+                ALTER TABLE orcamentos ADD COLUMN IF NOT EXISTS updated_by uuid NULL;
+
+                -- orcamento_itens: adicionar colunas faltantes (cria tabela se não existir)
+                CREATE TABLE IF NOT EXISTS orcamento_itens (
+                    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+                    orcamento_id uuid NOT NULL,
+                    empresa_id uuid NOT NULL,
+                    produto_id uuid NULL,
+                    categoria varchar(100) NULL,
+                    descricao text NOT NULL DEFAULT '',
+                    servico varchar(200) NULL,
+                    quantidade numeric(10,3) NOT NULL DEFAULT 1,
+                    unidade varchar(20) NOT NULL DEFAULT 'un',
+                    medida varchar(100) NULL,
+                    material varchar(200) NULL,
+                    nivel_sujeira varchar(50) NULL,
+                    valor_unitario numeric(12,2) NOT NULL DEFAULT 0,
+                    desconto numeric(12,2) NOT NULL DEFAULT 0,
+                    valor_total numeric(12,2) NOT NULL DEFAULT 0,
+                    observacao_tecnica text NULL,
+                    ordem int NOT NULL DEFAULT 0,
+                    created_at timestamptz NOT NULL DEFAULT NOW(),
+                    updated_at timestamptz NOT NULL DEFAULT NOW()
+                );
+                ALTER TABLE orcamento_itens ADD COLUMN IF NOT EXISTS empresa_id uuid NULL;
+                ALTER TABLE orcamento_itens ADD COLUMN IF NOT EXISTS produto_id uuid NULL;
+                ALTER TABLE orcamento_itens ADD COLUMN IF NOT EXISTS categoria varchar(100) NULL;
+                ALTER TABLE orcamento_itens ADD COLUMN IF NOT EXISTS servico varchar(200) NULL;
+                ALTER TABLE orcamento_itens ADD COLUMN IF NOT EXISTS unidade varchar(20) NULL;
+                ALTER TABLE orcamento_itens ADD COLUMN IF NOT EXISTS medida varchar(100) NULL;
+                ALTER TABLE orcamento_itens ADD COLUMN IF NOT EXISTS material varchar(200) NULL;
+                ALTER TABLE orcamento_itens ADD COLUMN IF NOT EXISTS nivel_sujeira varchar(50) NULL;
+                ALTER TABLE orcamento_itens ADD COLUMN IF NOT EXISTS desconto numeric(12,2) NULL;
+                ALTER TABLE orcamento_itens ADD COLUMN IF NOT EXISTS observacao_tecnica text NULL;
+                ALTER TABLE orcamento_itens ADD COLUMN IF NOT EXISTS ordem int NULL;
+                ALTER TABLE orcamento_itens ADD COLUMN IF NOT EXISTS updated_at timestamptz NULL;
+
+                -- orcamentos: garantir numero como int
+                ALTER TABLE orcamentos ALTER COLUMN numero TYPE integer USING COALESCE(numero::integer, 0);
+                ALTER TABLE orcamentos ALTER COLUMN numero SET DEFAULT 0;
             ";
             cmd.ExecuteNonQuery();
         }

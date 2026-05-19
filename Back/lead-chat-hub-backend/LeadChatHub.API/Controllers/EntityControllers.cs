@@ -302,11 +302,11 @@ public class OrcamentosController : CrudController<Orcamento>
     }
 }
 
-// ===================== ItensOrcamento =====================
-[ApiController, Route("api/itens-orcamento")]
-public class ItensOrcamentoController : CrudController<ItemOrcamento>
+// ===================== OrcamentoItens =====================
+[ApiController, Route("api/orcamento-itens")]
+public class OrcamentoItensController : CrudController<OrcamentoItem>
 {
-    public ItensOrcamentoController(AppDbContext db) : base(db) { }
+    public OrcamentoItensController(AppDbContext db) : base(db) { }
 }
 
 // ===================== NotasInternas =====================
