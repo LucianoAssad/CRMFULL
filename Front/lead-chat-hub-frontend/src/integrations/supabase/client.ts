@@ -246,9 +246,25 @@ class QueryBuilder {
     try {
       // ---- Mutations ----
       if (this._operation === "insert") {
-        const { data: result } = await api.post(`/${this.route}`, this._payload);
-        const normalized = this.normalize(result);
-        if (this._single || this._maybeSingle) return { data: Array.isArray(normalized) ? normalized[0] ?? null : normalized, error: null };
+        const payloads = Array.isArray(this._payload) ? this._payload : [this._payload];
+        if (payloads.length === 1) {
+          const { data: result } = await api.post(`/${this.route}`, payloads[0]);
+          const normalized = this.normalize(result);
+          if (this._single || this._maybeSingle) return { data: Array.isArray(normalized) ? normalized[0] ?? null : normalized, error: null };
+          return { data: normalized, error: null };
+        }
+        // Bulk insert: POST each record
+        const BATCH = 50;
+        const results: any[] = [];
+        for (let i = 0; i < payloads.length; i += BATCH) {
+          const batch = payloads.slice(i, i + BATCH);
+          const batchResults = await Promise.allSettled(batch.map((p: any) => api.post(`/${this.route}`, p)));
+          for (const r of batchResults) {
+            if (r.status === "fulfilled") results.push(r.value.data);
+          }
+        }
+        const normalized = results.map((r) => this.addSnakeKeys(r));
+        if (this._single || this._maybeSingle) return { data: normalized[0] ?? null, error: null };
         return { data: normalized, error: null };
       }
 
