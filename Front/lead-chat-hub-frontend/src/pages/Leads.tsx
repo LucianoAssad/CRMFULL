@@ -443,7 +443,6 @@ export default function Leads() {
                 </div>
               </div>
             </div>
-          </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancelar</Button>
             <Button onClick={criarLead} disabled={creating}>{creating ? "Salvando..." : "Cadastrar"}</Button>
