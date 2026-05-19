@@ -87,6 +87,7 @@ const TABLE_ROUTE_MAP: Record<string, string> = {
   webhooks_config: "webhooks-config",
   importacoes: "importacoes",
   perfil_comercial: "perfil-comercial",
+  empresa_perfil_comercial: "perfil-comercial",
   solicitacoes_vinculo_conta: "solicitacoes-vinculo-conta",
   contas_vinculos: "contas-vinculos",
   audit_logs: "audit-logs",
@@ -102,8 +103,7 @@ function getRoute(table: string): string {
 
 /**
  * Supabase-compatible query builder.
- * Usage: supabase.from("leads").select("*").eq("empresa_id", id)
- * This is a compatibility layer - all operations go through REST API.
+ * Fully fluent: insert/update/delete/upsert all return `this` and execute lazily via then().
  */
 class QueryBuilder {
   private table: string;
@@ -117,6 +117,10 @@ class QueryBuilder {
   private _maybeSingle: boolean = false;
   private _returnCount: boolean = false;
   private _headOnly: boolean = false;
+  // Mutation support
+  private _operation: "select" | "insert" | "update" | "delete" | "upsert" = "select";
+  private _payload: any = null;
+  private _upsertConflict: string = "";
 
   constructor(table: string) {
     this.table = table;
@@ -187,6 +191,31 @@ class QueryBuilder {
     return this;
   }
 
+  // Fluent mutation methods — return `this` so chains like .insert(x).eq("id",y) work
+  insert(data: any) {
+    this._operation = "insert";
+    this._payload = data;
+    return this;
+  }
+
+  update(data: any) {
+    this._operation = "update";
+    this._payload = data;
+    return this;
+  }
+
+  delete() {
+    this._operation = "delete";
+    return this;
+  }
+
+  upsert(data: any, opts?: { onConflict?: string }) {
+    this._operation = "upsert";
+    this._payload = data;
+    this._upsertConflict = opts?.onConflict ?? "";
+    return this;
+  }
+
   async then(resolve: (value: any) => void, reject?: (error: any) => void) {
     try {
       const result = await this.execute();
@@ -197,45 +226,120 @@ class QueryBuilder {
     }
   }
 
-  private async execute(): Promise<{ data: any; error: any }> {
-    try {
-      const params: Record<string, string> = {
-        limit: String(this._limit),
-      };
+  private addSnakeKeys(obj: any): any {
+    if (!obj || typeof obj !== "object" || Array.isArray(obj)) return obj;
+    const out: Record<string, any> = {};
+    for (const [k, v] of Object.entries(obj)) {
+      out[k] = v;
+      const snake = k.replace(/[A-Z]/g, (c) => `_${c.toLowerCase()}`);
+      if (snake !== k) out[snake] = v;
+    }
+    return out;
+  }
 
-      // Add filters as query params
+  private normalize(data: any) {
+    if (Array.isArray(data)) return data.map((r) => this.addSnakeKeys(r));
+    return data ? this.addSnakeKeys(data) : data;
+  }
+
+  private async execute(): Promise<{ data: any; error: any; count?: number }> {
+    try {
+      // ---- Mutations ----
+      if (this._operation === "insert") {
+        const { data: result } = await api.post(`/${this.route}`, this._payload);
+        const normalized = this.normalize(result);
+        if (this._single || this._maybeSingle) return { data: Array.isArray(normalized) ? normalized[0] ?? null : normalized, error: null };
+        return { data: normalized, error: null };
+      }
+
+      if (this._operation === "update") {
+        const id = this.filters["id"];
+        const idIn = this.filters["id__in"];
+        if (id) {
+          const { data: result } = await api.patch(`/${this.route}/${id}`, this._payload);
+          const normalized = this.normalize(result);
+          if (this._single || this._maybeSingle) return { data: Array.isArray(normalized) ? normalized[0] ?? null : normalized, error: null };
+          return { data: normalized, error: null };
+        } else if (idIn) {
+          // Bulk update: send PATCH to each ID sequentially
+          const ids = String(idIn).split(",");
+          const results = [];
+          for (const bid of ids) {
+            try {
+              const { data: r } = await api.patch(`/${this.route}/${bid}`, this._payload);
+              results.push(r);
+            } catch { /* ignore individual errors */ }
+          }
+          return { data: results, error: null };
+        }
+        return { data: null, error: "ID required for update" };
+      }
+
+      if (this._operation === "upsert") {
+        // Emulated upsert: check if conflict-key record exists, then PATCH or POST
+        let id = this.filters["id"];
+        if (!id && this._upsertConflict && this._payload) {
+          const conflictVal = this._payload[this._upsertConflict];
+          if (conflictVal) {
+            const { data: existing } = await api.get(`/${this.route}`, {
+              params: { [this._upsertConflict]: conflictVal, limit: "1" }
+            }).catch(() => ({ data: [] }));
+            const existingArr = Array.isArray(existing) ? existing : (existing ? [existing] : []);
+            if (existingArr.length > 0 && existingArr[0]?.id) id = existingArr[0].id;
+          }
+        }
+        let result;
+        if (id) {
+          const { data: r } = await api.patch(`/${this.route}/${id}`, this._payload);
+          result = r;
+        } else {
+          const { data: r } = await api.post(`/${this.route}`, this._payload);
+          result = r;
+        }
+        const normalized = this.normalize(result);
+        if (this._single || this._maybeSingle) return { data: Array.isArray(normalized) ? normalized[0] ?? null : normalized, error: null };
+        return { data: normalized, error: null };
+      }
+
+      if (this._operation === "delete") {
+        const id = this.filters["id"];
+        if (id) {
+          await api.delete(`/${this.route}/${id}`);
+          return { data: null, error: null };
+        }
+        // Non-id filter: GET matching records first, then delete each
+        const otherFilters = Object.entries(this.filters).filter(([k]) => k !== "id" && !k.startsWith("_"));
+        if (otherFilters.length > 0) {
+          const params: Record<string, string> = { limit: "1000" };
+          for (const [k, v] of otherFilters) params[k] = String(v);
+          const { data: toDelete } = await api.get(`/${this.route}`, { params }).catch(() => ({ data: [] }));
+          const rows = Array.isArray(toDelete) ? toDelete : (toDelete ? [toDelete] : []);
+          for (const row of rows) {
+            const rowId = row.id ?? row.Id;
+            if (rowId) await api.delete(`/${this.route}/${rowId}`).catch(() => {});
+          }
+          return { data: null, error: null };
+        }
+        return { data: null, error: "Filter required for delete" };
+      }
+
+      // ---- SELECT (default) ----
+      const params: Record<string, string> = { limit: String(this._limit) };
       for (const [key, value] of Object.entries(this.filters)) {
         params[key] = String(value);
       }
-
       if (this._orderBy) {
         params["_orderBy"] = this._orderBy;
         params["_orderDir"] = this._orderAsc ? "asc" : "desc";
       }
 
       const { data } = await api.get(`/${this.route}`, { params });
+      let result = (Array.isArray(data) ? data : [data]).map((r) => this.addSnakeKeys(r));
 
-      // Normalize: add snake_case aliases for all camelCase keys returned by API.
-      // This lets code use either lead.lead_id or lead.leadId interchangeably.
-      const addSnakeKeys = (obj: any): any => {
-        if (!obj || typeof obj !== "object" || Array.isArray(obj)) return obj;
-        const out: Record<string, any> = {};
-        for (const [k, v] of Object.entries(obj)) {
-          out[k] = v;
-          const snake = k.replace(/[A-Z]/g, (c) => `_${c.toLowerCase()}`);
-          if (snake !== k) out[snake] = v;
-        }
-        return out;
-      };
-
-      let result = (Array.isArray(data) ? data : [data]).map(addSnakeKeys);
-
-      // Apply client-side filtering for eq/neq/in
-      // Backend returns camelCase, but queries may use snake_case — try both
+      // Client-side filtering
       const toCamel = (s: string) => s.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
       const resolveVal = (r: any, k: string) => {
-        const v = r[k];
-        if (v !== undefined) return v;
+        const v = r[k]; if (v !== undefined) return v;
         return r[toCamel(k)];
       };
       for (const [key, value] of Object.entries(this.filters)) {
@@ -249,35 +353,22 @@ class QueryBuilder {
           result = result.filter((r: any) => vals.includes(String(resolveVal(r, col))));
         } else if (key.includes("__gte")) {
           const col = key.replace("__gte", "");
-          result = result.filter((r: any) => {
-            const v = resolveVal(r, col);
-            return v !== undefined && String(v) >= String(value);
-          });
+          result = result.filter((r: any) => { const v = resolveVal(r, col); return v !== undefined && String(v) >= String(value); });
         } else if (key.includes("__lte")) {
           const col = key.replace("__lte", "");
-          result = result.filter((r: any) => {
-            const v = resolveVal(r, col);
-            return v !== undefined && String(v) <= String(value);
-          });
+          result = result.filter((r: any) => { const v = resolveVal(r, col); return v !== undefined && String(v) <= String(value); });
         } else if (key.includes("__ilike")) {
           const col = key.replace("__ilike", "");
-          const pattern = String(value).toLowerCase().replace(/^%|%$/g, "");
-          result = result.filter((r: any) => {
-            const v = resolveVal(r, col);
-            return v !== undefined && String(v).toLowerCase().includes(pattern);
-          });
+          const pattern = String(value).replace(/^%|%$/g, "");
+          result = result.filter((r: any) => { const v = resolveVal(r, col); return v !== undefined && String(v).toLowerCase().includes(pattern); });
         } else {
-          result = result.filter(
-            (r: any) => String(resolveVal(r, key)) === String(value)
-          );
+          result = result.filter((r: any) => String(resolveVal(r, key)) === String(value));
         }
       }
 
-      // Apply ordering
       if (this._orderBy) {
         result.sort((a: any, b: any) => {
-          const aVal = a[this._orderBy];
-          const bVal = b[this._orderBy];
+          const aVal = a[this._orderBy]; const bVal = b[this._orderBy];
           if (aVal < bVal) return this._orderAsc ? -1 : 1;
           if (aVal > bVal) return this._orderAsc ? 1 : -1;
           return 0;
@@ -285,68 +376,12 @@ class QueryBuilder {
       }
 
       const count = this._returnCount ? result.length : undefined;
-
-      if (this._single || this._maybeSingle) {
-        return { data: result[0] || null, count, error: null };
-      }
-
-      if (this._headOnly) {
-        return { data: null, count, error: null };
-      }
-
+      if (this._single || this._maybeSingle) return { data: result[0] || null, count, error: null };
+      if (this._headOnly) return { data: null, count, error: null };
       return { data: result, count, error: null };
     } catch (error: any) {
       return { data: null, error: error.response?.data || error.message };
     }
-  }
-
-  // Insert
-  async insert(data: any) {
-    try {
-      const payload = Array.isArray(data) ? data : data;
-      const { data: result } = await api.post(`/${this.route}`, payload);
-      return { data: result, error: null };
-    } catch (error: any) {
-      return { data: null, error: error.response?.data || error.message };
-    }
-  }
-
-  // Update
-  async update(data: any) {
-    try {
-      // If we have an id filter, use PATCH
-      const id = this.filters["id"];
-      if (id) {
-        const { data: result } = await api.patch(
-          `/${this.route}/${id}`,
-          data
-        );
-        return { data: result, error: null };
-      }
-      // Bulk update not supported, return error
-      return { data: null, error: "ID required for update" };
-    } catch (error: any) {
-      return { data: null, error: error.response?.data || error.message };
-    }
-  }
-
-  // Delete
-  async delete() {
-    try {
-      const id = this.filters["id"];
-      if (id) {
-        await api.delete(`/${this.route}/${id}`);
-        return { data: null, error: null };
-      }
-      return { data: null, error: "ID required for delete" };
-    } catch (error: any) {
-      return { data: null, error: error.response?.data || error.message };
-    }
-  }
-
-  // Upsert
-  async upsert(data: any) {
-    return this.insert(data);
   }
 }
 

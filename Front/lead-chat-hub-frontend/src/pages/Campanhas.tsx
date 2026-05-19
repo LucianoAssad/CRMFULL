@@ -628,7 +628,7 @@ function NewCampanhaDialog({
         filtros,
         agendada_para: iniciarComoAgendada && agendada ? agendada : null,
         total_destinatarios: leads.length,
-      }).select().single();
+      });
 
       if (error || !camp) throw error || new Error("Falha ao criar");
 
