@@ -169,29 +169,36 @@ export function VinculosPanel() {
 
       setLinhas(lista);
 
-      const { data: rec } = await supabase
-        .from("solicitacoes_vinculo_conta")
-        .select(`
-          *,
-          solicitante:empresas!solicitacoes_vinculo_conta_conta_solicitante_id_fkey(id, nome, tipo_conta, codigo_publico, conta_gerente_id, tipo_vinculo_gerente, ativo),
-          alvo:empresas!solicitacoes_vinculo_conta_conta_alvo_id_fkey(id, nome, tipo_conta, codigo_publico, conta_gerente_id, tipo_vinculo_gerente, ativo),
-          destino:empresas!solicitacoes_vinculo_conta_conta_destino_id_fkey(id, nome, tipo_conta, codigo_publico, conta_gerente_id, tipo_vinculo_gerente, ativo)
-        `)
-        .eq("conta_alvo_id", activeContaId)
-        .order("created_at", { ascending: false });
-      setRecebidos((rec as any) || []);
+      // Busca solicitações (flat) + enrich com empresas separadamente
+      const [{ data: recRaw }, { data: envRaw }] = await Promise.all([
+        supabase.from("solicitacoes_vinculo_conta").select("*")
+          .eq("conta_alvo_id", activeContaId).order("created_at", { ascending: false }),
+        supabase.from("solicitacoes_vinculo_conta").select("*")
+          .eq("conta_solicitante_id", activeContaId).order("created_at", { ascending: false }),
+      ]);
 
-      const { data: env } = await supabase
-        .from("solicitacoes_vinculo_conta")
-        .select(`
-          *,
-          solicitante:empresas!solicitacoes_vinculo_conta_conta_solicitante_id_fkey(id, nome, tipo_conta, codigo_publico, conta_gerente_id, tipo_vinculo_gerente, ativo),
-          alvo:empresas!solicitacoes_vinculo_conta_conta_alvo_id_fkey(id, nome, tipo_conta, codigo_publico, conta_gerente_id, tipo_vinculo_gerente, ativo),
-          destino:empresas!solicitacoes_vinculo_conta_conta_destino_id_fkey(id, nome, tipo_conta, codigo_publico, conta_gerente_id, tipo_vinculo_gerente, ativo)
-        `)
-        .eq("conta_solicitante_id", activeContaId)
-        .order("created_at", { ascending: false });
-      setEnviados((env as any) || []);
+      // Coleta todos os empresa IDs das solicitações
+      const allSolicRaw = [...(recRaw as any[] || []), ...(envRaw as any[] || [])];
+      const solEmpIds = [...new Set(allSolicRaw.flatMap((r: any) => [
+        r.conta_solicitante_id ?? r.contaSolicitanteId,
+        r.conta_alvo_id ?? r.contaAlvoId,
+        r.conta_destino_id ?? r.contaDestinoId,
+      ].filter(Boolean)))];
+      let solEmpMap: Record<string, any> = {};
+      if (solEmpIds.length > 0) {
+        const { data: emps } = await supabase.from("empresas")
+          .select("id,nome,tipo_conta,codigo_publico,conta_gerente_id,tipo_vinculo_gerente,ativo")
+          .in("id", solEmpIds);
+        for (const e of (emps as any) || []) solEmpMap[e.id] = e;
+      }
+      const enrichSolic = (r: any) => ({
+        ...r,
+        solicitante: solEmpMap[r.conta_solicitante_id ?? r.contaSolicitanteId] ?? null,
+        alvo: solEmpMap[r.conta_alvo_id ?? r.contaAlvoId] ?? null,
+        destino: solEmpMap[r.conta_destino_id ?? r.contaDestinoId] ?? null,
+      });
+      setRecebidos((recRaw as any[] || []).map(enrichSolic));
+      setEnviados((envRaw as any[] || []).map(enrichSolic));
     } finally {
       setLoading(false);
     }

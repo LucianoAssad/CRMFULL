@@ -254,11 +254,10 @@ export default function Conexoes() {
       if (error) { toast.error(error.message); return; }
       toast.success("Conexão atualizada");
     } else {
+      // backend retorna a entidade criada diretamente no POST
       const { data, error } = await supabase
         .from("canais_conectados")
-        .insert([payload])
-        .select("id")
-        .single();
+        .insert(payload);
       if (error) { setLoading(false); toast.error(error.message); return; }
 
       // vincular ao canal_contas (sempre vincula a conta filha ativa)

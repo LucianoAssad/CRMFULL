@@ -145,6 +145,12 @@ class QueryBuilder {
     return this;
   }
 
+  ilike(column: string, value: any) {
+    // case-insensitive match — stored as __ilike for client-side filtering
+    this.filters[`${column}__ilike`] = String(value).toLowerCase();
+    return this;
+  }
+
   or(expression: string) {
     this.filters["_or"] = expression;
     return this;
@@ -252,6 +258,13 @@ class QueryBuilder {
           result = result.filter((r: any) => {
             const v = resolveVal(r, col);
             return v !== undefined && String(v) <= String(value);
+          });
+        } else if (key.includes("__ilike")) {
+          const col = key.replace("__ilike", "");
+          const pattern = String(value).toLowerCase().replace(/^%|%$/g, "");
+          result = result.filter((r: any) => {
+            const v = resolveVal(r, col);
+            return v !== undefined && String(v).toLowerCase().includes(pattern);
           });
         } else {
           result = result.filter(

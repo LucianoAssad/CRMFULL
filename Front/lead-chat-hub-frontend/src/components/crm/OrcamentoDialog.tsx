@@ -377,9 +377,11 @@ export function OrcamentoDialog({
 
       let orcId = orcamentoId ?? null;
       if (mode === "create") {
-        const { data, error } = await supabase.from("orcamentos").insert(payload).select("id").single();
+        // insert() retorna a entidade criada diretamente (backend C# retorna Created("", entity))
+        const { data, error } = await supabase.from("orcamentos").insert(payload);
         if (error) throw error;
-        orcId = (data as any).id;
+        orcId = (data as any)?.id ?? null;
+        if (!orcId) throw new Error("Orçamento criado mas ID não retornado");
       } else if (mode === "edit" && orcId) {
         const { error } = await supabase.from("orcamentos").update(payload).eq("id", orcId);
         if (error) throw error;

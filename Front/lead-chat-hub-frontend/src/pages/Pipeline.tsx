@@ -458,10 +458,9 @@ export default function Pipeline() {
     if (!pid) {
       const { data, error } = await supabase
         .from("pipelines")
-        .insert({ empresa_id: empresaId, nome: "Pipeline comercial", ativo: true })
-        .select().single();
+        .insert({ empresa_id: empresaId, nome: "Pipeline comercial", ativo: true });
       if (error) return toast.error(error.message);
-      pid = (data as any).id;
+      pid = (data as any)?.id;
     }
     const payload = DEFAULT_ETAPAS.map((d, i) => ({ pipeline_id: pid, nome: d.nome, ordem: i, cor: d.cor }));
     const { error: ee } = await supabase.from("pipeline_etapas").insert(payload);

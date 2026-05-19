@@ -69,9 +69,7 @@ export function WebchatWidget() {
       if (!empresa) {
         const { data, error } = await supabase
           .from("empresas")
-          .insert({ nome: "Empresa Teste" })
-          .select()
-          .single();
+          .insert({ nome: "Empresa Teste" });
         if (error) throw error;
         empresa = data;
       }
@@ -86,9 +84,7 @@ export function WebchatWidget() {
       if (!canal) {
         const { data, error } = await supabase
           .from("canais_conectados")
-          .insert({ empresa_id: empresa.id, tipo: "webchat", nome: "Webchat", ativo: true })
-          .select()
-          .single();
+          .insert({ empresa_id: empresa.id, tipo: "webchat", nome: "Webchat", ativo: true });
         if (error) throw error;
         canal = data;
       }
