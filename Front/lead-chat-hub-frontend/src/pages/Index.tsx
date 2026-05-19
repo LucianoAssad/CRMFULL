@@ -68,6 +68,14 @@ export default function Index() {
     created_at: l.created_at ?? l.createdAt ?? "",
     score: l.score ?? 0,
     utm_campaign: l.utm_campaign ?? l.utmCampaign ?? null,
+    telefone2: l.telefone2 ?? null,
+    cep: l.cep ?? null,
+    rua: l.rua ?? null,
+    numero: l.numero ?? null,
+    complemento: l.complemento ?? null,
+    bairro: l.bairro ?? null,
+    cidade: l.cidade ?? null,
+    estado: l.estado ?? null,
   });
 
   const loadConversas = async () => {

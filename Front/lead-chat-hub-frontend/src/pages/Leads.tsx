@@ -159,10 +159,18 @@ export default function Leads() {
     const patch = {
       nome: editForm.nome,
       telefone: editForm.telefone,
+      telefone2: editForm.telefone2 ?? null,
       email: editForm.email,
       status: editForm.status,
       origem: editForm.origem,
       notas: editForm.notas,
+      cep: editForm.cep ?? null,
+      rua: editForm.rua ?? null,
+      numero: editForm.numero ?? null,
+      complemento: editForm.complemento ?? null,
+      bairro: editForm.bairro ?? null,
+      cidade: editForm.cidade ?? null,
+      estado: editForm.estado ?? null,
     };
     const { error } = await supabase.from("leads").update(patch as any).eq("id", openLead.id);
     if (error) { toast.error(error.message); return; }
@@ -189,9 +197,17 @@ export default function Leads() {
       empresa_id: activeContaId,
       nome: createForm.nome!.trim(),
       telefone: createForm.telefone || null,
+      telefone2: createForm.telefone2 || null,
       email: createForm.email || null,
       origem: createForm.origem || null,
       status: (createForm.status as LeadStatus) || "novo",
+      cep: createForm.cep || null,
+      rua: createForm.rua || null,
+      numero: createForm.numero || null,
+      complemento: createForm.complemento || null,
+      bairro: createForm.bairro || null,
+      cidade: createForm.cidade || null,
+      estado: createForm.estado || null,
     } as any).select("id").maybeSingle();
     setCreating(false);
     if (error) { toast.error(error.message); return; }
@@ -362,7 +378,8 @@ export default function Leads() {
           <DialogHeader><DialogTitle>Cadastrar lead/cliente</DialogTitle></DialogHeader>
           <div className="grid grid-cols-2 gap-3">
             <div className="col-span-2"><Label>Nome *</Label><Input value={createForm.nome || ""} onChange={(e) => setCreateForm({ ...createForm, nome: e.target.value })} /></div>
-            <div><Label>Telefone</Label><Input value={createForm.telefone || ""} onChange={(e) => setCreateForm({ ...createForm, telefone: e.target.value })} /></div>
+            <div><Label>Telefone 1</Label><Input placeholder="+55 11 99999-9999" value={createForm.telefone || ""} onChange={(e) => setCreateForm({ ...createForm, telefone: e.target.value })} /></div>
+            <div><Label>Telefone 2</Label><Input placeholder="+55 11 99999-9999" value={createForm.telefone2 || ""} onChange={(e) => setCreateForm({ ...createForm, telefone2: e.target.value })} /></div>
             <div><Label>Email</Label><Input value={createForm.email || ""} onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })} /></div>
             <div>
               <Label>Origem</Label>
@@ -397,6 +414,21 @@ export default function Leads() {
               </Select>
             </div>
           </div>
+            <div className="col-span-2 border-t pt-2">
+              <p className="text-xs font-medium text-muted-foreground mb-2">Endereço (opcional)</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div><Label>CEP</Label><Input placeholder="00000-000" value={createForm.cep || ""} onChange={(e) => setCreateForm({ ...createForm, cep: e.target.value })} /></div>
+                <div><Label>Estado</Label><Input placeholder="SP" maxLength={2} value={createForm.estado || ""} onChange={(e) => setCreateForm({ ...createForm, estado: e.target.value.toUpperCase() })} /></div>
+                <div><Label>Cidade</Label><Input value={createForm.cidade || ""} onChange={(e) => setCreateForm({ ...createForm, cidade: e.target.value })} /></div>
+                <div><Label>Bairro</Label><Input value={createForm.bairro || ""} onChange={(e) => setCreateForm({ ...createForm, bairro: e.target.value })} /></div>
+                <div><Label>Rua / Logradouro</Label><Input value={createForm.rua || ""} onChange={(e) => setCreateForm({ ...createForm, rua: e.target.value })} /></div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div><Label>Número</Label><Input value={createForm.numero || ""} onChange={(e) => setCreateForm({ ...createForm, numero: e.target.value })} /></div>
+                  <div><Label>Complemento</Label><Input placeholder="Apto, sala..." value={createForm.complemento || ""} onChange={(e) => setCreateForm({ ...createForm, complemento: e.target.value })} /></div>
+                </div>
+              </div>
+            </div>
+          </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancelar</Button>
             <Button onClick={criarLead} disabled={creating}>{creating ? "Salvando..." : "Cadastrar"}</Button>
@@ -413,9 +445,10 @@ export default function Leads() {
             <div className="space-y-5 text-sm">
               {editing ? (
                 <div className="grid grid-cols-2 gap-3">
-                  <div><Label>Nome</Label><Input value={editForm.nome || ""} onChange={(e) => setEditForm({ ...editForm, nome: e.target.value })} /></div>
-                  <div><Label>Telefone</Label><Input value={editForm.telefone || ""} onChange={(e) => setEditForm({ ...editForm, telefone: e.target.value })} /></div>
-                  <div><Label>Email</Label><Input value={editForm.email || ""} onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} /></div>
+                  <div className="col-span-2"><Label>Nome</Label><Input value={editForm.nome || ""} onChange={(e) => setEditForm({ ...editForm, nome: e.target.value })} /></div>
+                  <div><Label>Telefone 1</Label><Input value={editForm.telefone || ""} onChange={(e) => setEditForm({ ...editForm, telefone: e.target.value })} /></div>
+                  <div><Label>Telefone 2</Label><Input value={editForm.telefone2 || ""} onChange={(e) => setEditForm({ ...editForm, telefone2: e.target.value })} /></div>
+                  <div className="col-span-2"><Label>Email</Label><Input value={editForm.email || ""} onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} /></div>
                   <div>
                     <Label>Origem</Label>
                     <Select value={editForm.origem || ""} onValueChange={(v) => setEditForm({ ...editForm, origem: v || null })}>
@@ -449,18 +482,40 @@ export default function Leads() {
                     </Select>
                   </div>
                   <div className="col-span-2"><Label>Observações</Label><Textarea value={editForm.notas || ""} onChange={(e) => setEditForm({ ...editForm, notas: e.target.value })} /></div>
+                  <div className="col-span-2 border-t pt-2">
+                    <p className="text-xs font-medium text-muted-foreground mb-2">Endereço</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div><Label>CEP</Label><Input placeholder="00000-000" value={editForm.cep || ""} onChange={(e) => setEditForm({ ...editForm, cep: e.target.value })} /></div>
+                      <div><Label>Estado</Label><Input placeholder="SP" maxLength={2} value={editForm.estado || ""} onChange={(e) => setEditForm({ ...editForm, estado: e.target.value.toUpperCase() })} /></div>
+                      <div><Label>Cidade</Label><Input value={editForm.cidade || ""} onChange={(e) => setEditForm({ ...editForm, cidade: e.target.value })} /></div>
+                      <div><Label>Bairro</Label><Input value={editForm.bairro || ""} onChange={(e) => setEditForm({ ...editForm, bairro: e.target.value })} /></div>
+                      <div><Label>Rua / Logradouro</Label><Input value={editForm.rua || ""} onChange={(e) => setEditForm({ ...editForm, rua: e.target.value })} /></div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div><Label>Número</Label><Input value={editForm.numero || ""} onChange={(e) => setEditForm({ ...editForm, numero: e.target.value })} /></div>
+                        <div><Label>Complemento</Label><Input placeholder="Apto, sala..." value={editForm.complemento || ""} onChange={(e) => setEditForm({ ...editForm, complemento: e.target.value })} /></div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               ) : (
                 <>
                   <section>
                     <h3 className="font-semibold mb-2">Contato</h3>
                     <div className="grid grid-cols-2 gap-2 text-xs">
-                      <div><span className="text-muted-foreground">Telefone:</span> {openLead.telefone || "—"}</div>
+                      <div><span className="text-muted-foreground">Telefone 1:</span> {openLead.telefone || "—"}</div>
+                      <div><span className="text-muted-foreground">Telefone 2:</span> {openLead.telefone2 || "—"}</div>
                       <div><span className="text-muted-foreground">Email:</span> {openLead.email || "—"}</div>
                       <div><span className="text-muted-foreground">Status:</span> {LEAD_STATUS_LABEL[openLead.status]}</div>
                       <div><span className="text-muted-foreground">Origem:</span> {openLead.origem || "—"}</div>
                       <div><span className="text-muted-foreground">Canal 1º contato:</span> {openConvs.sort((a,b) => (a.ultima_mensagem_em || "").localeCompare(b.ultima_mensagem_em || ""))[0]?.canal?.nome || "—"}</div>
                     </div>
+                    {(openLead.rua || openLead.cidade || openLead.cep) && (
+                      <div className="mt-2 grid grid-cols-2 gap-2 text-xs border-t pt-2">
+                        <div className="col-span-2"><span className="text-muted-foreground">Endereço:</span> {[openLead.rua, openLead.numero, openLead.complemento, openLead.bairro].filter(Boolean).join(", ") || "—"}</div>
+                        <div><span className="text-muted-foreground">Cidade/UF:</span> {[openLead.cidade, openLead.estado].filter(Boolean).join(" / ") || "—"}</div>
+                        <div><span className="text-muted-foreground">CEP:</span> {openLead.cep || "—"}</div>
+                      </div>
+                    )}
                   </section>
                   <section>
                     <div className="grid grid-cols-4 gap-2 text-xs">

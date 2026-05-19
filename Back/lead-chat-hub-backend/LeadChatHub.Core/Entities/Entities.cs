@@ -131,6 +131,8 @@ public class Lead
     public string? Bairro { get; set; }
     public string? Cidade { get; set; }
     public string? Estado { get; set; }
+    [Column("complemento")] public string? Complemento { get; set; }
+    [Column("telefone2")] public string? Telefone2 { get; set; }
     [Column("created_at")] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     [Column("updated_at")] public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 

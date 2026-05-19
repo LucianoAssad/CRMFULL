@@ -170,6 +170,25 @@ using (var scope = app.Services.CreateScope())
     {
         db.Database.EnsureCreated();
 
+        // Adicionar colunas novas que não existem no schema original (idempotente)
+        var conn = db.Database.GetDbConnection();
+        conn.Open();
+        using (var cmd = conn.CreateCommand())
+        {
+            cmd.CommandText = @"
+                ALTER TABLE leads ADD COLUMN IF NOT EXISTS telefone2 varchar(50) NULL;
+                ALTER TABLE leads ADD COLUMN IF NOT EXISTS complemento varchar(100) NULL;
+                ALTER TABLE leads ADD COLUMN IF NOT EXISTS cep varchar(20) NULL;
+                ALTER TABLE leads ADD COLUMN IF NOT EXISTS rua varchar(200) NULL;
+                ALTER TABLE leads ADD COLUMN IF NOT EXISTS numero varchar(20) NULL;
+                ALTER TABLE leads ADD COLUMN IF NOT EXISTS bairro varchar(100) NULL;
+                ALTER TABLE leads ADD COLUMN IF NOT EXISTS cidade varchar(100) NULL;
+                ALTER TABLE leads ADD COLUMN IF NOT EXISTS estado varchar(50) NULL;
+            ";
+            cmd.ExecuteNonQuery();
+        }
+        conn.Close();
+
         // Garantir que todo usuário com Role=super_admin tenha vínculo em pelo menos uma empresa ativa
         var superAdmins = db.Usuarios.Where(u => u.Role == "super_admin" && u.Ativo).ToList();
         var primeiraEmpresa = db.Empresas.OrderBy(e => e.CreatedAt).FirstOrDefault();

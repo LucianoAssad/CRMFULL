@@ -103,9 +103,11 @@ export interface Lead {
   nome_fantasia?: string | null;
   cnpj?: string | null;
   inscricao_estadual?: string | null;
+  telefone2?: string | null;
   cep?: string | null;
   rua?: string | null;
   numero?: string | null;
+  complemento?: string | null;
   bairro?: string | null;
   cidade?: string | null;
   estado?: string | null;
