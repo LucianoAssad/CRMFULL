@@ -486,6 +486,22 @@ export default function Conexoes() {
                             const variant = s === "conectado" ? "default" : s === "erro" ? "destructive" : "outline";
                             return <Badge variant={variant} className="text-[10px]">{STATUS_LABEL[s]}</Badge>;
                           })()}
+                          {c.tipo === "whatsapp" && (() => {
+                            const q = (c.configuracoes as any)?._quality as string | undefined;
+                            if (!q) return null;
+                            const qMap: Record<string, { label: string; cls: string }> = {
+                              GREEN: { label: "🟢 Alta", cls: "border-emerald-500/40 text-emerald-700 bg-emerald-50 dark:text-emerald-300 dark:bg-emerald-950/20" },
+                              YELLOW: { label: "🟡 Média", cls: "border-amber-500/40 text-amber-700 bg-amber-50 dark:text-amber-300 dark:bg-amber-950/20" },
+                              RED: { label: "🔴 Baixa", cls: "border-destructive/40 text-destructive bg-destructive/5" },
+                            };
+                            const m = qMap[q.toUpperCase()];
+                            if (!m) return null;
+                            return (
+                              <Badge variant="outline" className={`text-[10px] ${m.cls}`} title="Qualidade do número WhatsApp">
+                                {m.label}
+                              </Badge>
+                            );
+                          })()}
                         </div>
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground">

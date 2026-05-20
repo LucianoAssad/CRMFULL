@@ -29,6 +29,13 @@ import ConfiguracoesConta from "./pages/ConfiguracoesConta.tsx";
 import ConfiguracoesManager from "./pages/ConfiguracoesManager.tsx";
 import Vendas from "./pages/Vendas.tsx";
 import ImportacoesAccount from "./pages/ImportacoesAccount.tsx";
+import Agendamentos from "./pages/Agendamentos.tsx";
+import ChatbotFluxos from "./pages/ChatbotFluxos.tsx";
+import GruposWhatsapp from "./pages/GruposWhatsapp.tsx";
+import Afiliados from "./pages/Afiliados.tsx";
+import Integracoes from "./pages/Integracoes.tsx";
+import BaseConhecimento from "./pages/BaseConhecimento.tsx";
+import Comunidade from "./pages/Comunidade.tsx";
 import AdminLayout from "./layouts/AdminLayout.tsx";
 import { ModeGuard } from "./components/ModeGuard.tsx";
 import { PermissionRoute } from "./components/PermissionGate.tsx";
@@ -86,6 +93,13 @@ const App = () => (
               <Route path="/account/vendas" element={<ModeGuard required="account">{wrap("manage_sales", <Vendas />)}</ModeGuard>} />
               <Route path="/account/leads" element={<ModeGuard required="account">{wrap("view_crm", <Leads />)}</ModeGuard>} />
               <Route path="/account/importacoes" element={<ModeGuard required="account">{wrap("manage_imports", <ImportacoesAccount />)}</ModeGuard>} />
+              <Route path="/account/agendamentos" element={<ModeGuard required="account">{wrap("view_crm", <Agendamentos />)}</ModeGuard>} />
+              <Route path="/account/chatbot" element={<ModeGuard required="account">{wrap("manage_crm", <ChatbotFluxos />)}</ModeGuard>} />
+              <Route path="/account/grupos-whatsapp" element={<ModeGuard required="account">{wrap("manage_connections", <GruposWhatsapp />)}</ModeGuard>} />
+              <Route path="/account/afiliados" element={<ModeGuard required="account">{wrap("manage_crm", <Afiliados />)}</ModeGuard>} />
+              <Route path="/account/integracoes" element={<ModeGuard required="account">{wrap("manage_crm", <Integracoes />)}</ModeGuard>} />
+              <Route path="/account/base-conhecimento" element={<ModeGuard required="account">{wrap("view_crm", <BaseConhecimento />)}</ModeGuard>} />
+              <Route path="/account/comunidade" element={<ModeGuard required="account">{wrap("view_crm", <Comunidade />)}</ModeGuard>} />
               <Route path="/account/configuracoes" element={<ModeGuard required="account">{wrap("view_dashboard", <ConfiguracoesConta />)}</ModeGuard>} />
             </Route>
 

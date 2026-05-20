@@ -182,6 +182,7 @@ export default function Conversoes() {
   const [leads, setLeads] = useState<LeadOpt[]>([]);
   const [vendas, setVendas] = useState<VendaOpt[]>([]);
   const [identidades, setIdentidades] = useState<IdentidadeRow[]>([]);
+  const [canaisWA, setCanaisWA] = useState<{ id: string; nome: string; identificador: string | null }[]>([]);
 
   const reload = useCallback(async () => {
     if (!activeContaId) {
@@ -190,7 +191,7 @@ export default function Conversoes() {
       return;
     }
     setLoading(true);
-    const [c, d, e, cf, l, v, ids] = await Promise.all([
+    const [c, d, e, cf, l, v, ids, cwa] = await Promise.all([
       supabase.from("conversoes_offline")
         .select("*")
         .eq("empresa_id", activeContaId).order("convertido_em", { ascending: false }),
@@ -207,6 +208,8 @@ export default function Conversoes() {
         .eq("empresa_id", activeContaId).order("data_venda", { ascending: false }),
       supabase.from("lead_identidades").select("id,lead_id,tipo,valor,canal")
         .eq("empresa_id", activeContaId),
+      supabase.from("canais_conectados").select("id,nome,identificador")
+        .eq("empresa_id", activeContaId).eq("tipo", "whatsapp").eq("ativo", true),
     ]);
 
     // Backend does not support nested selects — enrich conversoes with lead data from the separate leads fetch
@@ -235,6 +238,7 @@ export default function Conversoes() {
     setLeads(leadsData);
     setVendas((v.data as any) || []);
     setIdentidades((ids.data as any) || []);
+    setCanaisWA((cwa.data as any) || []);
     setLoading(false);
   }, [activeContaId]);
 
@@ -862,8 +866,39 @@ export default function Conversoes() {
                     )}
                     {plat === "meta_ads" && (
                       <>
+                        {canaisWA.length > 0 && (
+                          <div>
+                            <Label className="text-xs">Vincular ao número/instância WhatsApp</Label>
+                            <Select
+                              value={(cfg.configuracoes as any)?._canal_id ?? "todos"}
+                              onValueChange={(v) => updateConfig(cfg, { configuracoes: { ...(cfg.configuracoes || {}), _canal_id: v === "todos" ? null : v } } as any)}
+                            >
+                              <SelectTrigger><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="todos">Todos os canais</SelectItem>
+                                {canaisWA.map((ch) => (
+                                  <SelectItem key={ch.id} value={ch.id}>
+                                    {ch.nome}{ch.identificador ? ` (${ch.identificador})` : ""}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <p className="text-[11px] text-muted-foreground mt-1">
+                              Define qual número WhatsApp dispara eventos para este pixel.
+                            </p>
+                          </div>
+                        )}
                         <CfgInput label="Pixel ID" value={cfg.meta_pixel_id} onSave={(v) => updateConfig(cfg, { meta_pixel_id: v })} />
                         <CfgInput label="Dataset ID" value={cfg.meta_dataset_id} onSave={(v) => updateConfig(cfg, { meta_dataset_id: v })} />
+                        <CfgInput
+                          label="Token de acesso CAPI"
+                          value={(cfg as any).meta_access_token ?? null}
+                          onSave={(v) => updateConfig(cfg, { meta_access_token: v } as any)}
+                          secret
+                        />
+                        <p className="text-[11px] text-muted-foreground -mt-2">
+                          Token da API de Conversões (CAPI) do Meta. Gere em: Meta Gerenciador de Eventos → Configurações → Gerar token.
+                        </p>
                       </>
                     )}
                     {plat === "tiktok_ads" && (
@@ -1067,18 +1102,28 @@ export default function Conversoes() {
 // Subcomponente: Input de configuração com salvamento on blur
 // =============================================================================
 
-function CfgInput({ label, value, onSave }: { label: string; value: string | null; onSave: (v: string | null) => void }) {
+function CfgInput({ label, value, onSave, secret }: { label: string; value: string | null; onSave: (v: string | null) => void; secret?: boolean }) {
   const [v, setV] = useState(value || "");
+  const [show, setShow] = useState(false);
   useEffect(() => { setV(value || ""); }, [value]);
   return (
     <div>
       <Label className="text-xs">{label}</Label>
-      <Input
-        value={v}
-        onChange={(e) => setV(e.target.value)}
-        onBlur={() => { if ((value || "") !== v) onSave(v.trim() || null); }}
-        placeholder="—"
-      />
+      <div className="flex gap-1">
+        <Input
+          type={secret && !show ? "password" : "text"}
+          value={v}
+          onChange={(e) => setV(e.target.value)}
+          onBlur={() => { if ((value || "") !== v) onSave(v.trim() || null); }}
+          placeholder="—"
+          className="flex-1"
+        />
+        {secret && (
+          <Button type="button" variant="ghost" size="icon" className="h-10 w-10 shrink-0" onClick={() => setShow((s) => !s)}>
+            {show ? "🙈" : "👁"}
+          </Button>
+        )}
+      </div>
     </div>
   );
 }

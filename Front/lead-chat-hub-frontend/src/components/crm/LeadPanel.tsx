@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { supabase as supabaseClient } from "@/integrations/supabase/client";
 import {
-  BadgeCheck, Briefcase, Building2, Copy, FileText, Headphones, History,
-  IdCard, Network, Save, Settings2, StickyNote, User, Wifi,
+  BadgeCheck, Briefcase, Building2, CalendarDays, CalendarPlus, Check, Copy, FileText, Headphones, History,
+  IdCard, Network, Save, Settings2, StickyNote, User, Wifi, X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -38,11 +38,11 @@ interface Props {
 
 type SectionKey =
   | "lead" | "atendimento" | "comercial" | "orcamentos" | "notas"
-  | "origem" | "historico" | "canal-tecnico" | "cadastro" | "identidades";
+  | "origem" | "historico" | "agendamentos" | "canal-tecnico" | "cadastro" | "identidades";
 
 const DEFAULT_OPEN: Record<SectionKey, boolean> = {
   lead: true, atendimento: true, comercial: true, orcamentos: true, notas: true,
-  origem: false, historico: false, "canal-tecnico": false, cadastro: false, identidades: false,
+  origem: false, historico: false, agendamentos: false, "canal-tecnico": false, cadastro: false, identidades: false,
 };
 
 export function LeadPanel({ lead, conversa, lastInboundAt, onSave, onConversaPatch }: Props) {
@@ -300,7 +300,12 @@ export function LeadPanel({ lead, conversa, lastInboundAt, onSave, onConversaPat
           </div>
         </InfoSection>
 
-        {/* 8. Canal técnico */}
+        {/* 8. Agendamentos */}
+        <InfoSection title="Agendamentos" icon={<CalendarDays className="h-3.5 w-3.5" />} {...sectionProps("agendamentos")}>
+          <AgendamentosLead leadId={lead.id} empresaId={lead.empresa_id} />
+        </InfoSection>
+
+        {/* 9. Canal técnico */}
         <InfoSection title="Canal técnico" icon={<Wifi className="h-3.5 w-3.5" />} {...sectionProps("canal-tecnico")}>
           <CanalAtendimentoSection conversa={conversa ?? null} lastInboundAt={lastInboundAt ?? null} />
         </InfoSection>
@@ -413,19 +418,54 @@ function CadastroSection({
   update: <K extends keyof Lead>(k: K, v: Lead[K]) => void;
 }) {
   const tipo = (form.tipo_pessoa ?? "fisica") as "fisica" | "juridica";
+  const [cepLoading, setCepLoading] = useState(false);
+
+  const buscarCep = async (cep: string) => {
+    const raw = cep.replace(/\D/g, "");
+    if (raw.length !== 8) return;
+    setCepLoading(true);
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${raw}/json/`);
+      const data = await res.json();
+      if (!data.erro) {
+        update("rua", data.logradouro ?? "");
+        update("bairro", data.bairro ?? "");
+        update("cidade", data.localidade ?? "");
+        update("estado", data.uf ?? "");
+        toast.success("CEP encontrado!");
+      } else {
+        toast.error("CEP não encontrado");
+      }
+    } catch {
+      toast.error("Erro ao buscar CEP");
+    } finally {
+      setCepLoading(false);
+    }
+  };
 
   return (
     <div className="space-y-3">
       <div className="space-y-1.5">
         <Label className="text-[11px]">Tipo de pessoa</Label>
-        <Select
-          value={tipo}
-          onValueChange={(v) => update("tipo_pessoa", v as any)}
-        >
+        <Select value={tipo} onValueChange={(v) => update("tipo_pessoa", v as any)}>
           <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="fisica">Pessoa física</SelectItem>
             <SelectItem value="juridica">Pessoa jurídica</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Gênero — disponível para ambos os tipos */}
+      <div className="space-y-1.5">
+        <Label className="text-[11px]">Gênero</Label>
+        <Select value={form.genero ?? "nao_informado"} onValueChange={(v) => update("genero", v === "nao_informado" ? null : v as any)}>
+          <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="nao_informado">Não definido</SelectItem>
+            <SelectItem value="masculino">Masculino</SelectItem>
+            <SelectItem value="feminino">Feminino</SelectItem>
+            <SelectItem value="outro">Outro</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -437,8 +477,8 @@ function CadastroSection({
             <Input id="cpf" className="h-8 text-xs" value={form.cpf ?? ""} onChange={(e) => update("cpf", e.target.value)} maxLength={20} placeholder="000.000.000-00" />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="nasc" className="text-[11px]">Data de nascimento</Label>
-            <Input id="nasc" className="h-8 text-xs" type="date" value={form.data_nascimento ?? ""} onChange={(e) => update("data_nascimento", e.target.value)} />
+            <Label htmlFor="nasc" className="text-[11px]">Data de aniversário</Label>
+            <Input id="nasc" className="h-8 text-xs" type="date" value={form.data_nascimento ? String(form.data_nascimento).slice(0, 10) : ""} onChange={(e) => update("data_nascimento", e.target.value)} />
           </div>
         </>
       ) : (
@@ -466,8 +506,18 @@ function CadastroSection({
         <h4 className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Endereço</h4>
         <div className="grid grid-cols-3 gap-2">
           <div className="col-span-1 space-y-1.5">
-            <Label htmlFor="cep" className="text-[11px]">CEP</Label>
-            <Input id="cep" className="h-8 text-xs" value={form.cep ?? ""} onChange={(e) => update("cep", e.target.value)} maxLength={10} />
+            <Label htmlFor="cep" className="text-[11px]">CEP {cepLoading && <span className="text-primary">...</span>}</Label>
+            <Input
+              id="cep"
+              className="h-8 text-xs"
+              value={form.cep ?? ""}
+              onChange={(e) => {
+                update("cep", e.target.value);
+                buscarCep(e.target.value);
+              }}
+              maxLength={10}
+              placeholder="00000-000"
+            />
           </div>
           <div className="col-span-2 space-y-1.5">
             <Label htmlFor="rua" className="text-[11px]">Rua</Label>
@@ -545,6 +595,94 @@ function Row({ label, value, mono = false }: { label: string; value: string; mon
     <div className="flex items-start justify-between gap-2 border-b border-border/50 pb-1.5">
       <dt className="text-muted-foreground">{label}</dt>
       <dd className={cn("break-all text-right font-medium", mono && "font-mono text-[11px]")}>{value}</dd>
+    </div>
+  );
+}
+
+// ── Agendamentos do lead ──────────────────────────────────────────────────────
+function AgendamentosLead({ leadId, empresaId }: { leadId: string; empresaId: string }) {
+  const [ags, setAgs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [newOpen, setNewOpen] = useState(false);
+  const [form, setForm] = useState({ titulo: "", tipo: "reuniao", data_inicio: "", notas: "" });
+
+  const load = async () => {
+    setLoading(true);
+    const { data } = await supabaseClient.from("agendamentos" as any).select("*").eq("lead_id", leadId).order("data_inicio").limit(20);
+    setAgs((data as any) || []);
+    setLoading(false);
+  };
+
+  useEffect(() => { load(); }, [leadId]);
+
+  const save = async () => {
+    if (!form.titulo.trim() || !form.data_inicio) return;
+    await supabaseClient.from("agendamentos" as any).insert({
+      empresa_id: empresaId, lead_id: leadId, titulo: form.titulo.trim(),
+      tipo: form.tipo, data_inicio: new Date(form.data_inicio).toISOString(),
+      notas: form.notas || null, status: "agendado",
+    } as any);
+    setNewOpen(false);
+    setForm({ titulo: "", tipo: "reuniao", data_inicio: "", notas: "" });
+    load();
+  };
+
+  const updateStatus = async (id: string, status: string) => {
+    await supabaseClient.from("agendamentos" as any).update({ status } as any).eq("id", id);
+    load();
+  };
+
+  const TIPO_EMOJI: Record<string, string> = { reuniao: "🤝", ligacao: "📞", visita: "🏠", tarefa: "✅", follow_up: "🔔" };
+  const STATUS_CLS: Record<string, string> = {
+    agendado: "bg-info/15 text-info", confirmado: "bg-primary/15 text-primary",
+    concluido: "bg-success/15 text-success", cancelado: "bg-destructive/15 text-destructive",
+    remarcado: "bg-warning/15 text-warning",
+  };
+
+  return (
+    <div className="space-y-2">
+      {loading ? (
+        <p className="text-xs text-muted-foreground">Carregando...</p>
+      ) : ags.length === 0 ? (
+        <p className="text-xs text-muted-foreground text-center py-2">Nenhum agendamento</p>
+      ) : ags.map((a: any) => (
+        <div key={a.id} className="rounded border bg-card p-2 space-y-1">
+          <div className="flex items-start justify-between gap-1">
+            <span className="text-xs font-medium">{TIPO_EMOJI[a.tipo] || "📅"} {a.titulo}</span>
+            <Badge variant="outline" className={cn("text-[9px] shrink-0", STATUS_CLS[a.status] || "")}>
+              {a.status}
+            </Badge>
+          </div>
+          <p className="text-[11px] text-muted-foreground">
+            {new Date(a.data_inicio).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}
+          </p>
+          {a.status !== "concluido" && a.status !== "cancelado" && (
+            <div className="flex gap-1">
+              <button onClick={() => updateStatus(a.id, "concluido")} className="flex items-center gap-0.5 text-[10px] text-success hover:underline">
+                <Check className="h-2.5 w-2.5" /> Concluído
+              </button>
+              <button onClick={() => updateStatus(a.id, "cancelado")} className="flex items-center gap-0.5 text-[10px] text-muted-foreground hover:underline ml-2">
+                <X className="h-2.5 w-2.5" /> Cancelar
+              </button>
+            </div>
+          )}
+        </div>
+      ))}
+
+      {!newOpen ? (
+        <Button size="sm" variant="outline" className="w-full h-7 text-xs" onClick={() => setNewOpen(true)}>
+          <CalendarPlus className="mr-1 h-3 w-3" /> Novo agendamento
+        </Button>
+      ) : (
+        <div className="rounded border p-2 space-y-2">
+          <Input value={form.titulo} onChange={(e) => setForm((f) => ({ ...f, titulo: e.target.value }))} placeholder="Título" className="h-7 text-xs" />
+          <input type="datetime-local" value={form.data_inicio} onChange={(e) => setForm((f) => ({ ...f, data_inicio: e.target.value }))} className="w-full rounded-md border bg-background px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-primary" />
+          <div className="flex gap-1">
+            <Button size="sm" className="flex-1 h-7 text-xs" onClick={save} disabled={!form.titulo.trim() || !form.data_inicio}>Criar</Button>
+            <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => setNewOpen(false)}>✕</Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

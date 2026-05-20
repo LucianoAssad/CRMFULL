@@ -135,6 +135,7 @@ public class Lead
     public string? Estado { get; set; }
     [Column("complemento")] public string? Complemento { get; set; }
     [Column("telefone2")] public string? Telefone2 { get; set; }
+    public string? Genero { get; set; }
     [Column("created_at")] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     [Column("updated_at")] public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
@@ -728,11 +729,150 @@ public class ConfiguracaoConversao
     [Column("google_conversion_action_id")] public string? GoogleConversionActionId { get; set; }
     [Column("meta_pixel_id")] public string? MetaPixelId { get; set; }
     [Column("meta_dataset_id")] public string? MetaDatasetId { get; set; }
+    [Column("meta_access_token")] public string? MetaAccessToken { get; set; }
     [Column("tiktok_advertiser_id")] public string? TiktokAdvertiserId { get; set; }
     [Column("tiktok_event_source_id")] public string? TiktokEventSourceId { get; set; }
     [Column("token_status")] public string TokenStatus { get; set; } = "nao_configurado";
     public bool Ativo { get; set; } = true;
+    public string Tipo { get; set; } = "pixel";
+    public string? Nome { get; set; }
+    public string? Configuracao { get; set; } // JSON livre (para saudações e outros tipos)
     public string? Configuracoes { get; set; } // JSON
+    [Column("created_at")] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    [Column("updated_at")] public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+}
+
+[Table("mensagens_programadas")]
+public class MensagemProgramada
+{
+    [Key] public Guid Id { get; set; } = Guid.NewGuid();
+    [Column("empresa_id")] public Guid EmpresaId { get; set; }
+    [Column("conversa_id")] public Guid ConversaId { get; set; }
+    public string Conteudo { get; set; } = "";
+    [Column("agendado_para")] public DateTime AgendadoPara { get; set; }
+    public string Status { get; set; } = "pendente"; // pendente | enviada | cancelada | erro
+    [Column("enviado_em")] public DateTime? EnviadoEm { get; set; }
+    public string? Erro { get; set; }
+    [Column("created_at")] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+}
+
+// ── Agendamentos ─────────────────────────────────────────────────────────────
+[Table("agendamentos")]
+public class Agendamento
+{
+    [Key] public Guid Id { get; set; } = Guid.NewGuid();
+    [Column("empresa_id")] public Guid EmpresaId { get; set; }
+    [Column("lead_id")] public Guid LeadId { get; set; }
+    [Column("conversa_id")] public Guid? ConversaId { get; set; }
+    [Column("usuario_id")] public Guid? UsuarioId { get; set; }
+    public string Titulo { get; set; } = "";
+    public string? Descricao { get; set; }
+    public string Tipo { get; set; } = "reuniao"; // reuniao | ligacao | visita | tarefa | follow_up
+    public string Status { get; set; } = "agendado"; // agendado | confirmado | concluido | cancelado | remarcado
+    [Column("data_inicio")] public DateTime DataInicio { get; set; }
+    [Column("data_fim")] public DateTime? DataFim { get; set; }
+    [Column("dia_todo")] public bool DiaTodo { get; set; } = false;
+    public string? Local { get; set; }
+    [Column("link_reuniao")] public string? LinkReuniao { get; set; }
+    [Column("lembrete_minutos")] public int? LembreteMinutos { get; set; }
+    public string? Notas { get; set; }
+    [Column("created_by")] public Guid? CreatedBy { get; set; }
+    [Column("created_at")] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    [Column("updated_at")] public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+}
+
+// ── Chatbot / Fluxos automáticos ─────────────────────────────────────────────
+[Table("chatbot_fluxos")]
+public class ChatbotFluxo
+{
+    [Key] public Guid Id { get; set; } = Guid.NewGuid();
+    [Column("empresa_id")] public Guid EmpresaId { get; set; }
+    [Column("canal_id")] public Guid? CanalId { get; set; }
+    public string Nome { get; set; } = "";
+    public string Tipo { get; set; } = "saudacao"; // saudacao | menu | regras | ia
+    public string? Configuracao { get; set; } // JSON
+    [Column("horario_inicio")] public string? HorarioInicio { get; set; }
+    [Column("horario_fim")] public string? HorarioFim { get; set; }
+    [Column("dias_semana")] public string? DiasSemana { get; set; }
+    public bool Ativo { get; set; } = true;
+    public int Ordem { get; set; } = 0;
+    [Column("created_at")] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    [Column("updated_at")] public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+}
+
+// ── P3: Afiliados ─────────────────────────────────────────────────────────────
+[Table("afiliados")]
+public class Afiliado
+{
+    [Key] public Guid Id { get; set; } = Guid.NewGuid();
+    [Column("empresa_id")] public Guid EmpresaId { get; set; }
+    [Column("usuario_id")] public Guid? UsuarioId { get; set; }
+    public string Nome { get; set; } = "";
+    public string? Email { get; set; }
+    public string? Telefone { get; set; }
+    [Column("codigo_afiliado")] public string CodigoAfiliado { get; set; } = "";
+    [Column("percentual_comissao")] public decimal PercentualComissao { get; set; } = 10;
+    [Column("total_indicacoes")] public int TotalIndicacoes { get; set; } = 0;
+    [Column("total_convertidas")] public int TotalConvertidas { get; set; } = 0;
+    [Column("total_comissao")] public decimal TotalComissao { get; set; } = 0;
+    public string Status { get; set; } = "ativo";
+    [Column("created_at")] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    [Column("updated_at")] public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+}
+
+[Table("indicacoes")]
+public class Indicacao
+{
+    [Key] public Guid Id { get; set; } = Guid.NewGuid();
+    [Column("empresa_id")] public Guid EmpresaId { get; set; }
+    [Column("afiliado_id")] public Guid AfiliadoId { get; set; }
+    [Column("lead_id")] public Guid? LeadId { get; set; }
+    [Column("nome_indicado")] public string NomeIndicado { get; set; } = "";
+    [Column("email_indicado")] public string? EmailIndicado { get; set; }
+    [Column("telefone_indicado")] public string? TelefoneIndicado { get; set; }
+    public string Status { get; set; } = "pendente";
+    [Column("valor_venda")] public decimal? ValorVenda { get; set; }
+    [Column("valor_comissao")] public decimal? ValorComissao { get; set; }
+    [Column("comissao_paga")] public bool ComissaoPaga { get; set; } = false;
+    [Column("paga_em")] public DateTime? PagaEm { get; set; }
+    public string? Observacoes { get; set; }
+    [Column("created_at")] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    [Column("updated_at")] public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+}
+
+// ── P3: Integrações externas ──────────────────────────────────────────────────
+[Table("integracoes_externas")]
+public class IntegracaoExterna
+{
+    [Key] public Guid Id { get; set; } = Guid.NewGuid();
+    [Column("empresa_id")] public Guid EmpresaId { get; set; }
+    public string Plataforma { get; set; } = "";
+    public string Nome { get; set; } = "";
+    [Column("webhook_url")] public string? WebhookUrl { get; set; }
+    [Column("api_key")] public string? ApiKey { get; set; }
+    public string? Configuracao { get; set; }
+    public string Status { get; set; } = "inativo";
+    [Column("ultimo_disparo")] public DateTime? UltimoDisparo { get; set; }
+    [Column("total_disparos")] public int TotalDisparos { get; set; } = 0;
+    public bool Ativo { get; set; } = false;
+    [Column("created_at")] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    [Column("updated_at")] public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+}
+
+// ── P3: Base de conhecimento ──────────────────────────────────────────────────
+[Table("base_conhecimento")]
+public class BaseConhecimento
+{
+    [Key] public Guid Id { get; set; } = Guid.NewGuid();
+    [Column("empresa_id")] public Guid EmpresaId { get; set; }
+    [Column("autor_id")] public Guid? AutorId { get; set; }
+    public string Titulo { get; set; } = "";
+    public string? Conteudo { get; set; }
+    public string Categoria { get; set; } = "geral";
+    public string[]? Tags { get; set; }
+    public bool Publico { get; set; } = false;
+    public bool Ativo { get; set; } = true;
+    public int Visualizacoes { get; set; } = 0;
     [Column("created_at")] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     [Column("updated_at")] public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }

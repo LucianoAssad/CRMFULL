@@ -95,6 +95,13 @@ const TABLE_ROUTE_MAP: Record<string, string> = {
   conversao_destinos: "conversao-destinos",
   exportacoes_conversoes: "exportacoes-conversoes",
   configuracoes_conversao: "configuracoes-conversao",
+  mensagens_programadas: "mensagens-programadas",
+  agendamentos: "agendamentos",
+  chatbot_fluxos: "chatbot-fluxos",
+  afiliados: "afiliados",
+  indicacoes: "indicacoes",
+  integracoes_externas: "integracoes-externas",
+  base_conhecimento: "base-conhecimento",
 };
 
 function getRoute(table: string): string {

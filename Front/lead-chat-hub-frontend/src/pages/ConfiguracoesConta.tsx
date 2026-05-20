@@ -9,6 +9,9 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { formatCodigoPublico } from "@/lib/codigo-publico";
 import PerfilComercialConta from "@/components/PerfilComercialConta";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { Plus, Trash2 } from "lucide-react";
 
 type Empresa = {
   id: string;
@@ -226,6 +229,136 @@ export default function ConfiguracoesConta() {
       </Card>
 
       <PerfilComercialConta />
+      {activeConta?.id && <SaudacoesAutomaticasPanel empresaId={activeConta.id} />}
     </div>
+  );
+}
+
+// ── Saudações automáticas ────────────────────────────────────────────────────
+interface SaudacaoMsg { conteudo: string; delay_s: number }
+
+function SaudacoesAutomaticasPanel({ empresaId }: { empresaId: string }) {
+  const [ativo, setAtivo] = useState(false);
+  const [msgs, setMsgs] = useState<SaudacaoMsg[]>([{ conteudo: "", delay_s: 0 }]);
+  const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const configId = `saudacao_automatica_${empresaId}`;
+
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      const { data } = await supabase
+        .from("configuracoes_conversao" as any)
+        .select("configuracao")
+        .eq("empresa_id", empresaId)
+        .eq("tipo", "saudacao_automatica")
+        .maybeSingle();
+      if (data) {
+        try {
+          const cfg = JSON.parse((data as any).configuracao || "{}");
+          setAtivo(cfg.ativo ?? false);
+          setMsgs(cfg.mensagens?.length ? cfg.mensagens : [{ conteudo: "", delay_s: 0 }]);
+        } catch { /* ignore */ }
+      }
+      setLoading(false);
+    })();
+  }, [empresaId]);
+
+  const save = async () => {
+    setSaving(true);
+    const cfg = JSON.stringify({ ativo, mensagens: msgs.filter((m) => m.conteudo.trim()) });
+    // Upsert via check first
+    const { data: existing } = await supabase
+      .from("configuracoes_conversao" as any)
+      .select("id")
+      .eq("empresa_id", empresaId)
+      .eq("tipo", "saudacao_automatica")
+      .maybeSingle();
+    if (existing) {
+      await supabase.from("configuracoes_conversao" as any).update({ configuracao: cfg } as any).eq("id", (existing as any).id);
+    } else {
+      await supabase.from("configuracoes_conversao" as any).insert({ empresa_id: empresaId, tipo: "saudacao_automatica", nome: "Saudação automática", configuracao: cfg } as any);
+    }
+    setSaving(false);
+    toast({ title: "Saudações automáticas salvas" });
+  };
+
+  const addMsg = () => {
+    if (msgs.length >= 5) return;
+    setMsgs([...msgs, { conteudo: "", delay_s: 5 }]);
+  };
+
+  const removeMsg = (i: number) => setMsgs(msgs.filter((_, idx) => idx !== i));
+
+  const updateMsg = (i: number, field: keyof SaudacaoMsg, val: string | number) =>
+    setMsgs(msgs.map((m, idx) => idx === i ? { ...m, [field]: val } : m));
+
+  if (loading) return null;
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="text-base">Saudação automática</CardTitle>
+            <CardDescription className="text-sm">
+              Envie até 5 mensagens automáticas quando um novo contato iniciar uma conversa.
+            </CardDescription>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">{ativo ? "Ativo" : "Inativo"}</span>
+            <Switch checked={ativo} onCheckedChange={setAtivo} />
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {msgs.map((msg, i) => (
+          <div key={i} className="rounded-md border p-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-muted-foreground">Mensagem {i + 1}</span>
+              {msgs.length > 1 && (
+                <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => removeMsg(i)}>
+                  <Trash2 className="h-3 w-3" />
+                </Button>
+              )}
+            </div>
+            <Textarea
+              value={msg.conteudo}
+              onChange={(e) => updateMsg(i, "conteudo", e.target.value)}
+              placeholder="Olá {{nome}}, como posso ajudar?"
+              rows={2}
+              className="text-sm"
+            />
+            <div className="flex items-center gap-2 text-sm">
+              <Label className="whitespace-nowrap text-xs">Delay (segundos)</Label>
+              <Input
+                type="number"
+                min={0}
+                max={300}
+                value={msg.delay_s}
+                onChange={(e) => updateMsg(i, "delay_s", Number(e.target.value))}
+                className="w-24 h-7 text-xs"
+              />
+              <span className="text-xs text-muted-foreground">após mensagem anterior</span>
+            </div>
+          </div>
+        ))}
+        <div className="flex items-center gap-2">
+          {msgs.length < 5 && (
+            <Button size="sm" variant="outline" onClick={addMsg}>
+              <Plus className="mr-1 h-3.5 w-3.5" /> Adicionar mensagem
+            </Button>
+          )}
+          <span className="text-xs text-muted-foreground">{msgs.length}/5 mensagens</span>
+          <Button size="sm" className="ml-auto" onClick={save} disabled={saving}>
+            {saving ? "Salvando…" : "Salvar"}
+          </Button>
+        </div>
+        <p className="text-[11px] text-muted-foreground">
+          Use <code>{"{{nome}}"}</code> para o nome do contato, <code>{"{{telefone}}"}</code> para o telefone.
+          As mensagens só serão enviadas se o canal suportar mensagens automáticas.
+        </p>
+      </CardContent>
+    </Card>
   );
 }

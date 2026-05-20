@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useCallback } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { Plus, Pencil, Trash2, ArrowUp, ArrowDown, GitBranch, Sparkles, Search, MessageSquare, User, ShoppingCart, Trophy, X, Download, Phone, CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
@@ -665,9 +665,9 @@ export default function Pipeline() {
                         onDrop={(e) => onDrop(e, etapa.id)}
                       >
                         <div className="p-3 border-b" style={{ borderTopColor: etapa.cor, borderTopWidth: 3 }}>
-                          <div className="flex items-center justify-between">
-                            <span className="font-medium text-sm" style={{ color: etapa.cor }}>{etapa.nome}</span>
-                            <Badge variant="outline" className="text-[10px]">{opps.length}</Badge>
+                          <div className="flex items-center justify-between gap-1">
+                            <EtapaNomeInline etapa={etapa} onSaved={(novoNome) => setEtapas((prev) => prev.map((e) => e.id === etapa.id ? { ...e, nome: novoNome } : e))} />
+                            <Badge variant="outline" className="text-[10px] shrink-0">{opps.length}</Badge>
                           </div>
                           <div className="text-xs text-muted-foreground mt-0.5">{fmtBRL(total)}</div>
                         </div>
@@ -1090,5 +1090,57 @@ export default function Pipeline() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+// ── Inline edit do nome de etapa ──────────────────────────────────────────────
+function EtapaNomeInline({ etapa, onSaved }: { etapa: Etapa; onSaved: (nome: string) => void }) {
+  const [editing, setEditing] = useState(false);
+  const [val, setVal] = useState(etapa.nome);
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
+  const startEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setVal(etapa.nome);
+    setEditing(true);
+    setTimeout(() => { inputRef.current?.focus(); inputRef.current?.select(); }, 0);
+  };
+
+  const commit = async () => {
+    const trimmed = val.trim();
+    if (!trimmed || trimmed === etapa.nome) { setEditing(false); return; }
+    const { error } = await supabase.from("pipeline_etapas").update({ nome: trimmed } as any).eq("id", etapa.id);
+    if (error) { toast.error(error.message); setEditing(false); return; }
+    onSaved(trimmed);
+    setEditing(false);
+    toast.success("Etapa renomeada");
+  };
+
+  if (editing) {
+    return (
+      <input
+        ref={inputRef}
+        value={val}
+        onChange={(e) => setVal(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); commit(); } if (e.key === "Escape") setEditing(false); }}
+        className="w-full rounded border px-1.5 py-0.5 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-primary"
+        style={{ color: etapa.cor }}
+        onClick={(e) => e.stopPropagation()}
+      />
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      title="Clique para renomear"
+      onClick={startEdit}
+      className="group/etapa flex items-center gap-1 min-w-0 truncate text-sm font-medium hover:opacity-80 transition-opacity"
+      style={{ color: etapa.cor }}
+    >
+      <span className="truncate">{etapa.nome}</span>
+      <Pencil className="h-3 w-3 shrink-0 opacity-0 group-hover/etapa:opacity-60 transition-opacity" />
+    </button>
   );
 }

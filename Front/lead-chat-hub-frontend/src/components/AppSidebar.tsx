@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
-  LayoutDashboard, Inbox, Building2, Users, Plug, Package, GitBranch, Target, FileText, Settings, ShoppingCart, Megaphone, Upload,
+  LayoutDashboard, Inbox, Building2, Users, Plug, Package, GitBranch, Target, FileText, Settings, ShoppingCart, Megaphone, Upload, CalendarDays, Bot, UsersRound, HandCoins, Cable, BookOpen, GraduationCap,
 } from "lucide-react";
 import {
-  Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
+  Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar,
 } from "@/components/ui/sidebar";
+import { supabase } from "@/integrations/supabase/client";
 import { useActiveAccount } from "@/contexts/ActiveAccountContext";
 import { formatCodigoPublico } from "@/lib/codigo-publico";
 
@@ -37,6 +38,13 @@ const accountItems: Item[] = [
   { title: "Templates", url: "/account/templates", icon: FileText, perm: "manage_templates" },
   { title: "Campanhas", url: "/account/campanhas", icon: Megaphone, perm: "manage_campaigns" },
   { title: "Importações", url: "/account/importacoes", icon: Upload, perm: "manage_imports" },
+  { title: "Agendamentos", url: "/account/agendamentos", icon: CalendarDays, perm: "view_crm" },
+  { title: "Chatbot & Fluxos", url: "/account/chatbot", icon: Bot, perm: "manage_crm" },
+  { title: "Grupos WhatsApp", url: "/account/grupos-whatsapp", icon: UsersRound, perm: "manage_connections" },
+  { title: "Afiliados", url: "/account/afiliados", icon: HandCoins, perm: "manage_crm" },
+  { title: "Integrações", url: "/account/integracoes", icon: Cable, perm: "manage_crm" },
+  { title: "Base de Conhecimento", url: "/account/base-conhecimento", icon: BookOpen, perm: "view_crm" },
+  { title: "Comunidade", url: "/account/comunidade", icon: GraduationCap, perm: "view_crm" },
   { title: "Acesso e segurança", url: "/account/usuarios", icon: Users, perm: "manage_users" },
   { title: "Configurações", url: "/account/configuracoes", icon: Settings, perm: "view_dashboard" },
 ];
@@ -47,6 +55,8 @@ export function AppSidebar() {
   const collapsed = state === "collapsed";
   const { pathname } = useLocation();
   const { activeConta, modoSistema } = useActiveAccount();
+  const [usageConversas, setUsageConversas] = useState<number | null>(null);
+  const [usageCanais, setUsageCanais] = useState<number | null>(null);
 
   // Re-render quando o role efetivo mudar (RoleSync dispara este evento)
   const [, setRoleTick] = useState(0);
@@ -55,6 +65,19 @@ export function AppSidebar() {
     window.addEventListener("active-role-changed", h);
     return () => window.removeEventListener("active-role-changed", h);
   }, []);
+
+  // Contador de uso — atualiza ao mudar conta ativa
+  useEffect(() => {
+    if (!activeConta?.id) { setUsageConversas(null); setUsageCanais(null); return; }
+    const id = activeConta.id;
+    Promise.all([
+      supabase.from("conversas").select("*", { count: "exact", head: true }).eq("empresa_id", id).neq("status", "fechada"),
+      supabase.from("canais_conectados").select("*", { count: "exact", head: true }).eq("empresa_id", id).eq("ativo", true),
+    ]).then(([c, k]) => {
+      setUsageConversas(c.count ?? 0);
+      setUsageCanais(k.count ?? 0);
+    });
+  }, [activeConta?.id]);
 
   // Fonte da verdade: modo da conta ativa (não a rota atual)
   const baseItems = modoSistema === "manager" ? managerItems : accountItems;
@@ -95,6 +118,26 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
+      {!collapsed && activeConta && (usageConversas !== null || usageCanais !== null) && (
+        <SidebarFooter className="border-t px-3 py-2">
+          <div className="space-y-1 text-[11px] text-muted-foreground">
+            <p className="font-medium text-foreground/70 uppercase tracking-wide text-[10px]">Uso atual</p>
+            {usageConversas !== null && (
+              <div className="flex items-center justify-between">
+                <span>Conversas abertas</span>
+                <span className="font-semibold text-foreground">{usageConversas}</span>
+              </div>
+            )}
+            {usageCanais !== null && (
+              <div className="flex items-center justify-between">
+                <span>Canais ativos</span>
+                <span className="font-semibold text-foreground">{usageCanais}</span>
+              </div>
+            )}
+          </div>
+        </SidebarFooter>
+      )}
     </Sidebar>
   );
 }

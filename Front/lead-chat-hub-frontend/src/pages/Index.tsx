@@ -73,6 +73,7 @@ export default function Index() {
     score: l.score ?? 0,
     utm_campaign: l.utm_campaign ?? l.utmCampaign ?? null,
     telefone2: l.telefone2 ?? null,
+    genero: l.genero ?? l.Genero ?? null,
     cep: l.cep ?? null,
     rua: l.rua ?? null,
     numero: l.numero ?? null,

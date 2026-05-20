@@ -104,6 +104,7 @@ export interface Lead {
   cnpj?: string | null;
   inscricao_estadual?: string | null;
   telefone2?: string | null;
+  genero?: string | null;
   cep?: string | null;
   rua?: string | null;
   numero?: string | null;

@@ -46,6 +46,13 @@ public class AppDbContext : DbContext
     public DbSet<ConversaoDestino> ConversaoDestinos => Set<ConversaoDestino>();
     public DbSet<ExportacaoConversao> ExportacoesConversoes => Set<ExportacaoConversao>();
     public DbSet<ConfiguracaoConversao> ConfiguracoesConversao => Set<ConfiguracaoConversao>();
+    public DbSet<MensagemProgramada> MensagensProgramadas => Set<MensagemProgramada>();
+    public DbSet<Agendamento> Agendamentos => Set<Agendamento>();
+    public DbSet<ChatbotFluxo> ChatbotFluxos => Set<ChatbotFluxo>();
+    public DbSet<Afiliado> Afiliados => Set<Afiliado>();
+    public DbSet<Indicacao> Indicacoes => Set<Indicacao>();
+    public DbSet<IntegracaoExterna> IntegracoesExternas => Set<IntegracaoExterna>();
+    public DbSet<BaseConhecimento> BaseConhecimento => Set<BaseConhecimento>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

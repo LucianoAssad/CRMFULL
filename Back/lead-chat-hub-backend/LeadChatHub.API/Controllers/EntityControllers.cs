@@ -455,3 +455,52 @@ public class ConfiguracoesConversaoController : CrudController<ConfiguracaoConve
 {
     public ConfiguracoesConversaoController(AppDbContext db) : base(db) { }
 }
+
+// ===================== MensagensProgramadas =====================
+[ApiController, Route("api/mensagens-programadas")]
+public class MensagensProgramadasController : CrudController<MensagemProgramada>
+{
+    public MensagensProgramadasController(AppDbContext db) : base(db) { }
+}
+
+// ===================== Agendamentos =====================
+[ApiController, Route("api/agendamentos")]
+public class AgendamentosController : CrudController<Agendamento>
+{
+    public AgendamentosController(AppDbContext db) : base(db) { }
+}
+
+// ===================== ChatbotFluxos =====================
+[ApiController, Route("api/chatbot-fluxos")]
+public class ChatbotFluxosController : CrudController<ChatbotFluxo>
+{
+    public ChatbotFluxosController(AppDbContext db) : base(db) { }
+}
+
+// ===================== Afiliados =====================
+[ApiController, Route("api/afiliados")]
+public class AfiliadosController : CrudController<Afiliado>
+{
+    public AfiliadosController(AppDbContext db) : base(db) { }
+}
+
+// ===================== Indicacoes =====================
+[ApiController, Route("api/indicacoes")]
+public class IndicacoesController : CrudController<Indicacao>
+{
+    public IndicacoesController(AppDbContext db) : base(db) { }
+}
+
+// ===================== IntegracoesExternas =====================
+[ApiController, Route("api/integracoes-externas")]
+public class IntegracoesExternasController : CrudController<IntegracaoExterna>
+{
+    public IntegracoesExternasController(AppDbContext db) : base(db) { }
+}
+
+// ===================== BaseConhecimento =====================
+[ApiController, Route("api/base-conhecimento")]
+public class BaseConhecimentoController : CrudController<BaseConhecimento>
+{
+    public BaseConhecimentoController(AppDbContext db) : base(db) { }
+}

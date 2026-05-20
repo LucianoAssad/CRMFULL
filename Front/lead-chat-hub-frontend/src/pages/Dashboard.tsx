@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { format, subDays, eachDayOfInterval } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { CalendarIcon, Users, MessageSquare, Briefcase, ShoppingCart, DollarSign, Clock, FileCheck, Download, TrendingUp, TrendingDown } from "lucide-react";
@@ -14,6 +14,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { useActiveAccount } from "@/contexts/ActiveAccountContext";
 
@@ -56,9 +57,11 @@ export default function Dashboard() {
   const [from, setFrom] = useState<Date | undefined>();
   const [to, setTo] = useState<Date | undefined>();
   const [m, setM] = useState<Metrics>(initial);
-  const [campanhas, setCampanhas] = useState<CampanhaRow[]>([]);
   const [contatosPorDia, setContatosPorDia] = useState<{ dia: string; leads: number }[]>([]);
   const [loading, setLoading] = useState(false);
+  const [utmKey, setUtmKey] = useState<"utm_campaign" | "utm_source" | "utm_medium" | "utm_content" | "utm_term">("utm_campaign");
+  const [rawLeads, setRawLeads] = useState<any[]>([]);
+  const [rawVendas, setRawVendas] = useState<any[]>([]);
 
   useEffect(() => { (async () => {
     if (scopedContaIds.length === 0) { setEmpresas([]); return; }
@@ -77,7 +80,7 @@ export default function Dashboard() {
   }, [to]);
 
   const load = async () => {
-    if (scopedContaIds.length === 0) { setM(initial); setCampanhas([]); return; }
+    if (scopedContaIds.length === 0) { setM(initial); setRawLeads([]); setRawVendas([]); return; }
     setLoading(true);
     try {
       const applyEmpresa = (q: any) => {
@@ -161,8 +164,8 @@ export default function Dashboard() {
         leads: contMap[format(d, "yyyy-MM-dd")] || 0,
       })));
 
-      // Campanhas: leads filtrados + vendas fechadas relacionadas via lead_id
-      let lq = supabase.from("leads").select("id, utm_campaign, created_at, empresa_id");
+      // UTM analytics: leads + vendas com todos campos UTM
+      let lq = supabase.from("leads").select("id, utm_campaign, utm_source, utm_medium, utm_content, utm_term, created_at, empresa_id");
       if (empresaId !== "all" && scopedContaIds.includes(empresaId)) lq = lq.eq("empresa_id", empresaId);
       else lq = lq.in("empresa_id", scopedContaIds);
       if (fromIso) lq = lq.gte("created_at", fromIso);
@@ -178,31 +181,9 @@ export default function Dashboard() {
       const { data: vendasData, error: vendasErr } = await vq.limit(10000);
       if (vendasErr) throw vendasErr;
 
-      const leadCampMap = new Map<string, string>();
-      const map = new Map<string, { leads: number; vendas: number; receita: number }>();
-      (leadsData || []).forEach((l: any) => {
-        const key = (l.utm_campaign && String(l.utm_campaign).trim()) || "sem campanha";
-        leadCampMap.set(l.id, key);
-        const cur = map.get(key) || { leads: 0, vendas: 0, receita: 0 };
-        cur.leads += 1;
-        map.set(key, cur);
-      });
-      (vendasData || []).forEach((v: any) => {
-        const key = leadCampMap.get(v.lead_id) || "sem campanha";
-        const cur = map.get(key) || { leads: 0, vendas: 0, receita: 0 };
-        cur.vendas += 1;
-        cur.receita += Number(v.valor_total || 0);
-        map.set(key, cur);
-      });
-      const rows: CampanhaRow[] = Array.from(map.entries()).map(([campanha, v]) => ({
-        campanha,
-        leads: v.leads,
-        vendas: v.vendas,
-        receita: v.receita,
-        taxa: v.leads > 0 ? v.vendas / v.leads : 0,
-        ticket: v.vendas > 0 ? v.receita / v.vendas : 0,
-      })).sort((a, b) => b.receita - a.receita);
-      setCampanhas(rows);
+      setRawLeads(leadsData || []);
+      setRawVendas(vendasData || []);
+      // campanhas computed via useMemo based on utmKey
     } catch (e: any) {
       toast.error(e.message || "Erro ao carregar métricas");
     } finally {
@@ -211,6 +192,39 @@ export default function Dashboard() {
   };
 
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [empresaId, fromIso, toIso]);
+
+  // Recomputa tabela de campanhas ao mudar dimensão UTM ou dados brutos
+  const campanhas = useMemo(() => {
+    const LABEL: Record<string, string> = {
+      utm_campaign: "sem campanha", utm_source: "sem source",
+      utm_medium: "sem medium", utm_content: "sem conjunto", utm_term: "sem anúncio",
+    };
+    const fallback = LABEL[utmKey] ?? "—";
+    const leadKeyMap = new Map<string, string>();
+    const map = new Map<string, { leads: number; vendas: number; receita: number }>();
+    rawLeads.forEach((l: any) => {
+      const key = (l[utmKey] && String(l[utmKey]).trim()) || fallback;
+      leadKeyMap.set(l.id, key);
+      const cur = map.get(key) || { leads: 0, vendas: 0, receita: 0 };
+      cur.leads += 1;
+      map.set(key, cur);
+    });
+    rawVendas.forEach((v: any) => {
+      const key = leadKeyMap.get(v.lead_id) || fallback;
+      const cur = map.get(key) || { leads: 0, vendas: 0, receita: 0 };
+      cur.vendas += 1;
+      cur.receita += Number(v.valor_total || 0);
+      map.set(key, cur);
+    });
+    return Array.from(map.entries()).map(([campanha, v]) => ({
+      campanha,
+      leads: v.leads,
+      vendas: v.vendas,
+      receita: v.receita,
+      taxa: v.leads > 0 ? v.vendas / v.leads : 0,
+      ticket: v.vendas > 0 ? v.receita / v.vendas : 0,
+    })).sort((a, b) => b.receita - a.receita);
+  }, [rawLeads, rawVendas, utmKey]);
 
   const cards = [
     { label: "Total de leads", value: m.totalLeads, icon: Users, variant: "default" },
@@ -330,8 +344,17 @@ export default function Dashboard() {
 
       <Card>
         <CardHeader>
-          <div className="flex items-start justify-between gap-4">
+          <div className="flex flex-wrap items-start justify-between gap-3">
             <CardTitle className="text-lg">Performance de Campanhas</CardTitle>
+            <Tabs value={utmKey} onValueChange={(v) => setUtmKey(v as typeof utmKey)} className="w-auto">
+              <TabsList className="h-8 text-xs">
+                <TabsTrigger value="utm_campaign" className="text-xs px-2">Campanha</TabsTrigger>
+                <TabsTrigger value="utm_source" className="text-xs px-2">Source</TabsTrigger>
+                <TabsTrigger value="utm_medium" className="text-xs px-2">Medium</TabsTrigger>
+                <TabsTrigger value="utm_content" className="text-xs px-2">Conjunto</TabsTrigger>
+                <TabsTrigger value="utm_term" className="text-xs px-2">Anúncio</TabsTrigger>
+              </TabsList>
+            </Tabs>
             <Button
               variant="outline"
               size="sm"
@@ -391,7 +414,7 @@ export default function Dashboard() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Campanha</TableHead>
+                <TableHead>{{ utm_campaign: "Campanha", utm_source: "Source", utm_medium: "Medium", utm_content: "Conjunto de anúncio", utm_term: "Anúncio" }[utmKey]}</TableHead>
                 <TableHead className="text-right">Leads</TableHead>
                 <TableHead className="text-right">Vendas</TableHead>
                 <TableHead className="text-right">Receita</TableHead>

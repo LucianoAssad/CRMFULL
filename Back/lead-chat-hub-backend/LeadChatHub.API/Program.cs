@@ -188,6 +188,7 @@ using (var scope = app.Services.CreateScope())
                 ALTER TABLE leads ADD COLUMN IF NOT EXISTS bairro varchar(100) NULL;
                 ALTER TABLE leads ADD COLUMN IF NOT EXISTS cidade varchar(100) NULL;
                 ALTER TABLE leads ADD COLUMN IF NOT EXISTS estado varchar(50) NULL;
+                ALTER TABLE leads ADD COLUMN IF NOT EXISTS genero varchar(20) NULL;
 
                 -- empresas: campos adicionais
                 ALTER TABLE empresas ADD COLUMN IF NOT EXISTS tipo_vinculo_gerente varchar(50) NULL;
@@ -402,11 +403,138 @@ using (var scope = app.Services.CreateScope())
                     google_conversion_action_id varchar(100) NULL,
                     meta_pixel_id varchar(100) NULL,
                     meta_dataset_id varchar(100) NULL,
+                    meta_access_token text NULL,
                     tiktok_advertiser_id varchar(100) NULL,
                     tiktok_event_source_id varchar(100) NULL,
                     token_status varchar(30) NOT NULL DEFAULT 'nao_configurado',
                     ativo boolean NOT NULL DEFAULT true,
+                    tipo varchar(50) NOT NULL DEFAULT 'pixel',
+                    nome varchar(150) NULL,
+                    configuracao text NULL,
                     configuracoes jsonb NULL,
+                    created_at timestamptz NOT NULL DEFAULT NOW(),
+                    updated_at timestamptz NOT NULL DEFAULT NOW()
+                );
+
+                -- agendamentos
+                CREATE TABLE IF NOT EXISTS agendamentos (
+                    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+                    empresa_id uuid NOT NULL,
+                    lead_id uuid NOT NULL,
+                    conversa_id uuid NULL,
+                    usuario_id uuid NULL,
+                    titulo varchar(200) NOT NULL DEFAULT '',
+                    descricao text NULL,
+                    tipo varchar(50) NOT NULL DEFAULT 'reuniao',
+                    status varchar(30) NOT NULL DEFAULT 'agendado',
+                    data_inicio timestamptz NOT NULL DEFAULT NOW(),
+                    data_fim timestamptz NULL,
+                    dia_todo boolean NOT NULL DEFAULT false,
+                    local varchar(300) NULL,
+                    link_reuniao varchar(500) NULL,
+                    lembrete_minutos int NULL,
+                    notas text NULL,
+                    created_by uuid NULL,
+                    created_at timestamptz NOT NULL DEFAULT NOW(),
+                    updated_at timestamptz NOT NULL DEFAULT NOW()
+                );
+
+                -- chatbot_fluxos
+                CREATE TABLE IF NOT EXISTS chatbot_fluxos (
+                    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+                    empresa_id uuid NOT NULL,
+                    canal_id uuid NULL,
+                    nome varchar(150) NOT NULL DEFAULT '',
+                    tipo varchar(50) NOT NULL DEFAULT 'saudacao',
+                    configuracao text NULL,
+                    horario_inicio varchar(10) NULL,
+                    horario_fim varchar(10) NULL,
+                    dias_semana varchar(30) NULL,
+                    ativo boolean NOT NULL DEFAULT true,
+                    ordem int NOT NULL DEFAULT 0,
+                    created_at timestamptz NOT NULL DEFAULT NOW(),
+                    updated_at timestamptz NOT NULL DEFAULT NOW()
+                );
+
+                -- mensagens_programadas
+                CREATE TABLE IF NOT EXISTS mensagens_programadas (
+                    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+                    empresa_id uuid NOT NULL,
+                    conversa_id uuid NOT NULL,
+                    conteudo text NOT NULL,
+                    agendado_para timestamptz NOT NULL,
+                    status varchar(30) NOT NULL DEFAULT 'pendente',
+                    enviado_em timestamptz NULL,
+                    erro text NULL,
+                    created_at timestamptz NOT NULL DEFAULT NOW()
+                );
+
+                -- afiliados
+                CREATE TABLE IF NOT EXISTS afiliados (
+                    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+                    empresa_id uuid NOT NULL,
+                    usuario_id uuid NULL,
+                    nome varchar(200) NOT NULL DEFAULT '',
+                    email varchar(200) NULL,
+                    telefone varchar(50) NULL,
+                    codigo_afiliado varchar(50) NOT NULL DEFAULT '',
+                    percentual_comissao numeric(5,2) NOT NULL DEFAULT 10,
+                    total_indicacoes int NOT NULL DEFAULT 0,
+                    total_convertidas int NOT NULL DEFAULT 0,
+                    total_comissao numeric(12,2) NOT NULL DEFAULT 0,
+                    status varchar(30) NOT NULL DEFAULT 'ativo',
+                    created_at timestamptz NOT NULL DEFAULT NOW(),
+                    updated_at timestamptz NOT NULL DEFAULT NOW()
+                );
+
+                -- indicacoes
+                CREATE TABLE IF NOT EXISTS indicacoes (
+                    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+                    empresa_id uuid NOT NULL,
+                    afiliado_id uuid NOT NULL,
+                    lead_id uuid NULL,
+                    nome_indicado varchar(200) NOT NULL DEFAULT '',
+                    email_indicado varchar(200) NULL,
+                    telefone_indicado varchar(50) NULL,
+                    status varchar(30) NOT NULL DEFAULT 'pendente',
+                    valor_venda numeric(12,2) NULL,
+                    valor_comissao numeric(12,2) NULL,
+                    comissao_paga boolean NOT NULL DEFAULT false,
+                    paga_em timestamptz NULL,
+                    observacoes text NULL,
+                    created_at timestamptz NOT NULL DEFAULT NOW(),
+                    updated_at timestamptz NOT NULL DEFAULT NOW()
+                );
+
+                -- integracoes_externas
+                CREATE TABLE IF NOT EXISTS integracoes_externas (
+                    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+                    empresa_id uuid NOT NULL,
+                    plataforma varchar(50) NOT NULL DEFAULT '',
+                    nome varchar(150) NOT NULL DEFAULT '',
+                    webhook_url text NULL,
+                    api_key text NULL,
+                    configuracao text NULL,
+                    status varchar(30) NOT NULL DEFAULT 'inativo',
+                    ultimo_disparo timestamptz NULL,
+                    total_disparos int NOT NULL DEFAULT 0,
+                    ativo boolean NOT NULL DEFAULT false,
+                    created_at timestamptz NOT NULL DEFAULT NOW(),
+                    updated_at timestamptz NOT NULL DEFAULT NOW()
+                );
+
+                -- base_conhecimento
+                CREATE TABLE IF NOT EXISTS base_conhecimento (
+                    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+                    empresa_id uuid NOT NULL,
+                    autor_id uuid NULL,
+                    titulo varchar(300) NOT NULL DEFAULT '',
+                    conteudo text NULL,
+                    categoria varchar(100) NOT NULL DEFAULT 'geral',
+                    tags text[] NULL,
+                    publico boolean NOT NULL DEFAULT false,
+                    ativo boolean NOT NULL DEFAULT true,
+                    visualizacoes int NOT NULL DEFAULT 0,
                     created_at timestamptz NOT NULL DEFAULT NOW(),
                     updated_at timestamptz NOT NULL DEFAULT NOW()
                 );
