@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { format } from "date-fns";
-import { CalendarIcon, Users, MessageSquare, Briefcase, ShoppingCart, DollarSign, Clock, FileCheck, Download } from "lucide-react";
+import { format, subDays, eachDayOfInterval } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { CalendarIcon, Users, MessageSquare, Briefcase, ShoppingCart, DollarSign, Clock, FileCheck, Download, TrendingUp, TrendingDown } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -38,11 +39,14 @@ interface Metrics {
   receitaVendas: number;
   convPendentes: number;
   convExportadas: number;
+  valorGanho: number;
+  valorPerdido: number;
 }
 
 const initial: Metrics = {
   totalLeads: 0, conversasAbertas: 0, oportunidadesAbertas: 0,
   vendasFechadas: 0, receitaVendas: 0, convPendentes: 0, convExportadas: 0,
+  valorGanho: 0, valorPerdido: 0,
 };
 
 export default function Dashboard() {
@@ -53,6 +57,7 @@ export default function Dashboard() {
   const [to, setTo] = useState<Date | undefined>();
   const [m, setM] = useState<Metrics>(initial);
   const [campanhas, setCampanhas] = useState<CampanhaRow[]>([]);
+  const [contatosPorDia, setContatosPorDia] = useState<{ dia: string; leads: number }[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => { (async () => {
@@ -118,6 +123,13 @@ export default function Dashboard() {
       const pendRes = await buildConvOffline("pendente");
       const expRes = await buildConvOffline("exportado_csv");
 
+      // oportunidades ganhas e perdidas
+      const oppsGanhasQ = applyEmpresa(supabase.from("oportunidades").select("valor")).eq("status", "ganha");
+      const oppsPerdQ = applyEmpresa(supabase.from("oportunidades").select("valor")).eq("status", "perdida");
+      const [ganhasRes, perdRes] = await Promise.all([oppsGanhasQ, oppsPerdQ]);
+      const valorGanho = ((ganhasRes.data as any[]) || []).reduce((s: number, r: any) => s + Number(r.valor || 0), 0);
+      const valorPerdido = ((perdRes.data as any[]) || []).reduce((s: number, r: any) => s + Number(r.valor || 0), 0);
+
       setM({
         totalLeads: totalLeadsRes.count || 0,
         conversasAbertas: conversasRes.count || 0,
@@ -126,7 +138,28 @@ export default function Dashboard() {
         receitaVendas,
         convPendentes: pendRes.count || 0,
         convExportadas: expRes.count || 0,
+        valorGanho,
+        valorPerdido,
       });
+
+      // Novos contatos por dia (últimos 30 dias)
+      const diasAtras30 = subDays(new Date(), 29).toISOString();
+      let lqDia = supabase.from("leads").select("created_at");
+      if (empresaId !== "all" && scopedContaIds.includes(empresaId)) lqDia = lqDia.eq("empresa_id", empresaId);
+      else lqDia = lqDia.in("empresa_id", scopedContaIds);
+      lqDia = lqDia.gte("created_at", diasAtras30);
+      const { data: leadsParaDia } = await lqDia.limit(10000);
+      const diasInterval = eachDayOfInterval({ start: subDays(new Date(), 29), end: new Date() });
+      const contMap: Record<string, number> = {};
+      for (const d of diasInterval) contMap[format(d, "yyyy-MM-dd")] = 0;
+      for (const l of (leadsParaDia as any[]) || []) {
+        const dia = (l.created_at ?? l.createdAt ?? "").slice(0, 10);
+        if (contMap[dia] !== undefined) contMap[dia]++;
+      }
+      setContatosPorDia(diasInterval.map((d) => ({
+        dia: format(d, "dd/MM", { locale: ptBR }),
+        leads: contMap[format(d, "yyyy-MM-dd")] || 0,
+      })));
 
       // Campanhas: leads filtrados + vendas fechadas relacionadas via lead_id
       let lq = supabase.from("leads").select("id, utm_campaign, created_at, empresa_id");
@@ -180,14 +213,16 @@ export default function Dashboard() {
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [empresaId, fromIso, toIso]);
 
   const cards = [
-    { label: "Total de leads", value: m.totalLeads, icon: Users },
-    { label: "Conversas abertas", value: m.conversasAbertas, icon: MessageSquare },
-    { label: "Oportunidades abertas", value: m.oportunidadesAbertas, icon: Briefcase },
-    { label: "Vendas fechadas", value: m.vendasFechadas, icon: ShoppingCart },
-    { label: "Receita de vendas", value: m.receitaVendas.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }), icon: DollarSign },
-    { label: "Conversões pendentes", value: m.convPendentes, icon: Clock },
-    { label: "Conversões exportadas", value: m.convExportadas, icon: FileCheck },
+    { label: "Total de leads", value: m.totalLeads, icon: Users, variant: "default" },
+    { label: "Conversas abertas", value: m.conversasAbertas, icon: MessageSquare, variant: "default" },
+    { label: "Oportunidades abertas", value: m.oportunidadesAbertas, icon: Briefcase, variant: "default" },
+    { label: "Vendas fechadas", value: m.vendasFechadas, icon: ShoppingCart, variant: "default" },
+    { label: "Receita de vendas", value: m.receitaVendas.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }), icon: DollarSign, variant: "default" },
+    { label: "Conversões pendentes", value: m.convPendentes, icon: Clock, variant: "default" },
+    { label: "Conversões exportadas", value: m.convExportadas, icon: FileCheck, variant: "default" },
   ];
+  const cardGanho = { label: "Valor total ganho", value: m.valorGanho.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }), icon: TrendingUp };
+  const cardPerdido = { label: "Valor total perdido", value: m.valorPerdido.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }), icon: TrendingDown };
 
   const dateBtn = (d: Date | undefined, ph: string, set: (v?: Date) => void) => (
     <Popover>
@@ -247,7 +282,51 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         ))}
+        {/* Valor ganho — verde */}
+        <Card className="border-emerald-500/40 bg-emerald-50/50 dark:bg-emerald-950/20">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-emerald-700 dark:text-emerald-400">{cardGanho.label}</CardTitle>
+            <cardGanho.icon className="h-4 w-4 text-emerald-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">{loading ? "—" : cardGanho.value}</div>
+          </CardContent>
+        </Card>
+        {/* Valor perdido — vermelho */}
+        <Card className="border-destructive/40 bg-destructive/5">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-destructive">{cardPerdido.label}</CardTitle>
+            <cardPerdido.icon className="h-4 w-4 text-destructive" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-destructive">{loading ? "—" : cardPerdido.value}</div>
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Novos contatos por dia */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Novos contatos por dia</CardTitle>
+          <p className="text-sm text-muted-foreground">Últimos 30 dias</p>
+        </CardHeader>
+        <CardContent>
+          <div className="h-56 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={contatosPorDia} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="dia" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} interval={4} />
+                <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} width={30} allowDecimals={false} />
+                <Tooltip
+                  contentStyle={{ background: "hsl(var(--popover))", border: "1px solid hsl(var(--border))", borderRadius: 6, color: "hsl(var(--popover-foreground))" }}
+                  formatter={(v: any) => [v, "Leads"]}
+                />
+                <Bar dataKey="leads" fill="hsl(var(--primary))" radius={[3, 3, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>

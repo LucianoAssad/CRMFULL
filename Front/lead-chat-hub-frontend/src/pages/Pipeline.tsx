@@ -1,5 +1,9 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
-import { Plus, Pencil, Trash2, ArrowUp, ArrowDown, GitBranch, Sparkles, Search, MessageSquare, User, ShoppingCart, Trophy, X, Download } from "lucide-react";
+import { Plus, Pencil, Trash2, ArrowUp, ArrowDown, GitBranch, Sparkles, Search, MessageSquare, User, ShoppingCart, Trophy, X, Download, Phone, CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 import { exportToCsv } from "@/lib/export-csv";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -100,6 +104,8 @@ export default function Pipeline() {
   const [fOrigem, setFOrigem] = useState<string>("all");
   const [fStatus, setFStatus] = useState<string>("all");
   const [fPeriodo, setFPeriodo] = useState<string>("all");
+  const [fFrom, setFFrom] = useState<Date | undefined>();
+  const [fTo, setFTo] = useState<Date | undefined>();
 
   // Pipeline/Etapa CRUD dialogs
   const [pOpen, setPOpen] = useState(false);
@@ -242,7 +248,10 @@ export default function Pipeline() {
     };
     return oportunidades.filter((o) => {
       const lead = leadsMap[o.lead_id];
-      if (q && !o.titulo.toLowerCase().includes(q) && !(lead?.nome.toLowerCase().includes(q))) return false;
+      if (q && !o.titulo.toLowerCase().includes(q)
+        && !(lead?.nome.toLowerCase().includes(q))
+        && !(lead?.telefone?.replace(/\D/g, "").includes(q.replace(/\D/g, "")))
+        && !(lead?.email?.toLowerCase().includes(q))) return false;
       if (fResp !== "all" && o.responsavel_id !== fResp) return false;
       if (fProduto !== "all" && o.produto_id !== fProduto) return false;
       if (fOrigem !== "all" && o.origem !== fOrigem) return false;
@@ -250,9 +259,14 @@ export default function Pipeline() {
       if (fPeriodo !== "all" && periodMs[fPeriodo]) {
         if (now - new Date(o.created_at).getTime() > periodMs[fPeriodo]) return false;
       }
+      if (fFrom && new Date(o.created_at) < fFrom) return false;
+      if (fTo) {
+        const toEnd = new Date(fTo); toEnd.setHours(23, 59, 59, 999);
+        if (new Date(o.created_at) > toEnd) return false;
+      }
       return true;
     });
-  }, [oportunidades, leadsMap, busca, fResp, fProduto, fOrigem, fStatus, fPeriodo]);
+  }, [oportunidades, leadsMap, busca, fResp, fProduto, fOrigem, fStatus, fPeriodo, fFrom, fTo]);
 
   const oppsPorEtapa = useMemo(() => {
     const map: Record<string, Oportunidade[]> = {};
@@ -543,7 +557,7 @@ export default function Pipeline() {
               <div className="flex flex-wrap gap-2 items-center">
                 <div className="relative flex-1 min-w-[220px]">
                   <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input className="pl-8" placeholder="Buscar por cliente ou título..." value={busca} onChange={(e) => setBusca(e.target.value)} />
+                  <Input className="pl-8" placeholder="Buscar por cliente, telefone ou título..." value={busca} onChange={(e) => setBusca(e.target.value)} />
                 </div>
                 <Select value={fStatus} onValueChange={setFStatus}>
                   <SelectTrigger className="w-36"><SelectValue placeholder="Status" /></SelectTrigger>
@@ -582,7 +596,7 @@ export default function Pipeline() {
                     ))}
                   </SelectContent>
                 </Select>
-                <Select value={fPeriodo} onValueChange={setFPeriodo}>
+                <Select value={fPeriodo} onValueChange={(v) => { setFPeriodo(v); if (v !== "all") { setFFrom(undefined); setFTo(undefined); } }}>
                   <SelectTrigger className="w-36"><SelectValue placeholder="Período" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todo período</SelectItem>
@@ -591,6 +605,34 @@ export default function Pipeline() {
                     <SelectItem value="90d">Últimos 90 dias</SelectItem>
                   </SelectContent>
                 </Select>
+                {/* Date range pickers */}
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" size="sm" className={cn("h-9 text-xs", !fFrom && "text-muted-foreground")}>
+                      <CalendarIcon className="mr-1 h-3.5 w-3.5" />
+                      {fFrom ? format(fFrom, "dd/MM/yyyy") : "De"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar mode="single" selected={fFrom} onSelect={(d) => { setFFrom(d); setFPeriodo("all"); }} initialFocus className="p-3 pointer-events-auto" />
+                  </PopoverContent>
+                </Popover>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" size="sm" className={cn("h-9 text-xs", !fTo && "text-muted-foreground")}>
+                      <CalendarIcon className="mr-1 h-3.5 w-3.5" />
+                      {fTo ? format(fTo, "dd/MM/yyyy") : "Até"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar mode="single" selected={fTo} onSelect={(d) => { setFTo(d); setFPeriodo("all"); }} initialFocus className="p-3 pointer-events-auto" />
+                  </PopoverContent>
+                </Popover>
+                {(fFrom || fTo) && (
+                  <Button variant="ghost" size="sm" className="h-9 text-xs" onClick={() => { setFFrom(undefined); setFTo(undefined); }}>
+                    <X className="h-3.5 w-3.5" />
+                  </Button>
+                )}
                 <Button variant="outline" onClick={() => exportToCsv("pipeline", oportunidadesFiltradas.map((o) => ({
                   titulo: o.titulo,
                   lead: leadsMap[o.lead_id]?.nome ?? "",
@@ -640,7 +682,7 @@ export default function Pipeline() {
                                 draggable
                                 onDragStart={(e) => onDragStart(e, opp.id)}
                                 onClick={() => setDetalhe(opp)}
-                                className="rounded-md border bg-background p-2.5 cursor-pointer hover:border-primary transition-colors space-y-1.5"
+                                className="group rounded-md border bg-background p-2.5 cursor-pointer hover:border-primary transition-colors space-y-1.5"
                               >
                                 <div className="flex items-start justify-between gap-2">
                                   <span className="text-sm font-medium leading-tight">{opp.titulo}</span>
@@ -649,8 +691,23 @@ export default function Pipeline() {
                                   </Badge>
                                 </div>
                                 {lead && (
-                                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                    <User className="h-3 w-3" /> {lead.nome}
+                                  <div className="space-y-0.5">
+                                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                      <User className="h-3 w-3 shrink-0" /> {lead.nome}
+                                    </div>
+                                    {lead.telefone && (
+                                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                        <Phone className="h-3 w-3 shrink-0" />
+                                        <span className="font-mono">{lead.telefone}</span>
+                                        <button
+                                          onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(lead.telefone!); toast.success("Copiado!"); }}
+                                          className="ml-auto opacity-0 group-hover:opacity-100 hover:text-foreground transition-opacity"
+                                          title="Copiar telefone"
+                                        >
+                                          <svg className="h-2.5 w-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                        </button>
+                                      </div>
+                                    )}
                                   </div>
                                 )}
                                 {prod && (
@@ -700,20 +757,46 @@ export default function Pipeline() {
                       </div>
                     );
                   })}
-                  {(oppsPorEtapa["__sem_etapa__"]?.length ?? 0) > 0 && (
-                    <div className="w-72 shrink-0 rounded-md border bg-muted/30">
-                      <div className="p-3 border-b">
-                        <span className="font-medium text-sm">Sem etapa</span>
+                  {/* Coluna "Sem status" — sempre visível como no Corelli */}
+                  <div
+                    className="w-72 shrink-0 rounded-md border bg-muted/30 flex flex-col"
+                    onDragOver={onDragOver}
+                    onDrop={(e) => onDrop(e, "__sem_etapa__")}
+                  >
+                    <div className="p-3 border-b" style={{ borderTopColor: "#6b7280", borderTopWidth: 3 }}>
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-sm text-muted-foreground">Sem status</span>
+                        <Badge variant="outline" className="text-[10px]">{oppsPorEtapa["__sem_etapa__"]?.length ?? 0}</Badge>
                       </div>
-                      <div className="p-2 space-y-2">
-                        {oppsPorEtapa["__sem_etapa__"].map((opp) => (
-                          <div key={opp.id} onClick={() => setDetalhe(opp)} className="rounded-md border bg-background p-2 cursor-pointer text-xs">
-                            {opp.titulo}
-                          </div>
-                        ))}
+                      <div className="text-xs text-muted-foreground mt-0.5">
+                        {fmtBRL((oppsPorEtapa["__sem_etapa__"] || []).reduce((s, o) => s + Number(o.valor_estimado || 0), 0))}
                       </div>
                     </div>
-                  )}
+                    <div className="p-2 space-y-2 min-h-[120px] max-h-[calc(100vh-360px)] overflow-y-auto">
+                      {(oppsPorEtapa["__sem_etapa__"] || []).map((opp) => {
+                        const lead = leadsMap[opp.lead_id];
+                        return (
+                          <div key={opp.id} onClick={() => setDetalhe(opp)} className="group rounded-md border bg-background p-2.5 cursor-pointer hover:border-primary transition-colors space-y-1">
+                            <span className="text-sm font-medium">{opp.titulo}</span>
+                            {lead && (
+                              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                <User className="h-3 w-3" /> {lead.nome}
+                              </div>
+                            )}
+                            {lead?.telefone && (
+                              <div className="flex items-center gap-1 text-xs text-muted-foreground font-mono">
+                                <Phone className="h-3 w-3" /> {lead.telefone}
+                              </div>
+                            )}
+                            <span className="text-sm font-mono font-semibold">{fmtBRL(Number(opp.valor_estimado))}</span>
+                          </div>
+                        );
+                      })}
+                      {(oppsPorEtapa["__sem_etapa__"] || []).length === 0 && (
+                        <p className="text-xs text-muted-foreground text-center py-4">Arraste leads aqui</p>
+                      )}
+                    </div>
+                  </div>
                 </div>
               )}
             </>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { supabase as supabaseClient } from "@/integrations/supabase/client";
 import {
   BadgeCheck, Briefcase, Building2, Copy, FileText, Headphones, History,
   IdCard, Network, Save, Settings2, StickyNote, User, Wifi,
@@ -115,6 +116,32 @@ export function LeadPanel({ lead, conversa, lastInboundAt, onSave, onConversaPat
   };
 
   const handleSave = async () => {
+    // Detecta campos alterados para log histórico
+    if (lead && conversa) {
+      const camposLabel: Record<string, string> = {
+        nome: "Nome", telefone: "Telefone", email: "E-mail", status: "Status",
+        cep: "CEP", rua: "Rua", numero: "Número", bairro: "Bairro",
+        cidade: "Cidade", estado: "Estado",
+      };
+      const mudancas: string[] = [];
+      for (const [k, label] of Object.entries(camposLabel)) {
+        const antes = (lead as any)[k];
+        const depois = (form as any)[k];
+        if (String(antes ?? "") !== String(depois ?? "")) {
+          mudancas.push(`${label}: "${antes ?? ""}" → "${depois ?? ""}"`);
+        }
+      }
+      if (mudancas.length > 0) {
+        try {
+          await supabaseClient.from("eventos_conversa" as any).insert({
+            conversa_id: conversa.id,
+            tipo: "lead_atualizado",
+            payload: { mudancas, lead_id: lead.id },
+          });
+        } catch { /* silencioso */ }
+      }
+    }
+
     await onSave(form);
     if (lead) {
       await syncLeadIdentidades({

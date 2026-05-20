@@ -268,7 +268,16 @@ function buildBadges(c: Conversa, foraJanela: boolean, hasResponsavel: boolean):
     });
   }
 
-  // 3. Erro de envio
+  // 3. Fora da janela 24h
+  if (foraJanela) {
+    all.push({
+      key: "janela",
+      label: "Expirado",
+      className: "border-amber-500/50 bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-200",
+    });
+  }
+
+  // 4. Erro de envio
   if ((c as any).erro_envio) {
     all.push({
       key: "erro",
