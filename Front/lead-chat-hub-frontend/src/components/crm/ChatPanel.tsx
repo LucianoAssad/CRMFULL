@@ -186,6 +186,9 @@ export function ChatPanel({ conversa, mensagens, onSend, onSendTemplate, contasF
   const dentroDaJanela = !isOficial || (restanteMs !== null && restanteMs > 0);
   const foraDaJanela = isOficial && !dentroDaJanela;
 
+  // MUST be before any early return (Rules of Hooks)
+  const justSelectedQR = useRef(false);
+
   if (!conversa) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center chat-bg-pattern">
@@ -223,7 +226,6 @@ export function ChatPanel({ conversa, mensagens, onSend, onSendTemplate, contasF
     }
   };
 
-  const justSelectedQR = useRef(false);
   const selectQR = (conteudo: string) => {
     justSelectedQR.current = true;
     setText(conteudo);
