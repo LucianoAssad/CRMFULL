@@ -179,6 +179,11 @@ using (var scope = app.Services.CreateScope())
         using (var cmd = conn.CreateCommand())
         {
             cmd.CommandText = @"
+                -- pipelines: coluna updated_at pode estar ausente em instâncias antigas
+                ALTER TABLE pipelines ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT NOW();
+                ALTER TABLE pipeline_etapas ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT NOW();
+                ALTER TABLE oportunidades ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT NOW();
+
                 -- leads
                 ALTER TABLE leads ADD COLUMN IF NOT EXISTS telefone2 varchar(50) NULL;
                 ALTER TABLE leads ADD COLUMN IF NOT EXISTS complemento varchar(100) NULL;
