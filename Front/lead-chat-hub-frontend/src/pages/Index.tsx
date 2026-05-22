@@ -22,19 +22,28 @@ export default function Index() {
   const [lead, setLead] = useState<Lead | null>(null);
 
   const loadCanais = async () => {
-    let q = supabase.from("canais_conectados").select("*").eq("ativo", true);
-    if (scopedContaIds.length > 0) q = q.in("empresa_id", scopedContaIds);
-    const { data } = await q;
+    // 1) canais próprios da empresa (empresa_id in scopedContaIds)
+    let ownedIds: string[] = [];
+    if (scopedContaIds.length > 0) {
+      const { data: owned } = await supabase.from("canais_conectados").select("id").eq("ativo", true).in("empresa_id", scopedContaIds);
+      ownedIds = ((owned as any) || []).map((c: any) => c.id);
+    }
+    // 2) canais compartilhados via canal_contas para a conta ativa
+    let sharedIds: string[] = [];
+    const contaId = activeContaId || (scopedContaIds.length > 0 ? scopedContaIds[0] : null);
+    if (contaId) {
+      const { data: links } = await supabase.from("canal_contas" as any).select("canal_conectado_id").eq("conta_filha_id", contaId).eq("ativo", true);
+      sharedIds = ((links as any) || []).map((l: any) => l.canal_conectado_id);
+    }
+    const allIds = Array.from(new Set([...ownedIds, ...sharedIds]));
+    if (allIds.length === 0) { setCanais([]); setCanalContas({}); return; }
+    const { data } = await supabase.from("canais_conectados").select("*").in("id", allIds).eq("ativo", true);
     const list: Canal[] = (data as any) || [];
     setCanais(list);
-    // carrega vínculos canal -> contas filhas ativas
-    if (list.length === 0) { setCanalContas({}); return; }
-    const { data: links } = await supabase
-      .from("canal_contas" as any)
-      .select("canal_conectado_id, conta_filha_id, ativo")
-      .in("canal_conectado_id", list.map((c) => c.id));
+    // mapa canal -> contas filhas vinculadas
+    const { data: allLinks } = await supabase.from("canal_contas" as any).select("canal_conectado_id, conta_filha_id, ativo").in("canal_conectado_id", allIds);
     const map: Record<string, string[]> = {};
-    for (const l of (links as any) || []) {
+    for (const l of (allLinks as any) || []) {
       if (!l.ativo) continue;
       (map[l.canal_conectado_id] ||= []).push(l.conta_filha_id);
     }
