@@ -169,9 +169,14 @@ app.MapHub<ChatHub>("/hubs/chat");
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+    // Step 1: EnsureCreated in its own try/catch so a failure here doesn't skip migrations
+    try { db.Database.EnsureCreated(); }
+    catch (Exception ex) { Console.WriteLine($"EnsureCreated warning: {ex.Message}"); }
+
+    // Step 2: ALTER TABLE migrations — always runs, even if EnsureCreated failed
     try
     {
-        db.Database.EnsureCreated();
 
         // Adicionar colunas novas que não existem no schema original (idempotente)
         var conn = db.Database.GetDbConnection();
@@ -547,7 +552,13 @@ using (var scope = app.Services.CreateScope())
             cmd.ExecuteNonQuery();
         }
         conn.Close();
+        Console.WriteLine("DB migrations OK");
+    }
+    catch (Exception ex) { Console.WriteLine($"DB migration warning: {ex.Message}"); }
 
+    // Step 3: Seed data — runs independently of migrations
+    try
+    {
         // Garantir que todo usuário com Role=super_admin tenha vínculo em pelo menos uma empresa ativa
         var superAdmins = db.Usuarios.Where(u => u.Role == "super_admin" && u.Ativo).ToList();
         var primeiraEmpresa = db.Empresas.OrderBy(e => e.CreatedAt).FirstOrDefault();
@@ -601,7 +612,7 @@ using (var scope = app.Services.CreateScope())
             Console.WriteLine("Seed: usuário admin criado — admin@admin.com / admin123");
         }
     }
-    catch (Exception ex) { Console.WriteLine($"DB init warning: {ex.Message}"); }
+    catch (Exception ex) { Console.WriteLine($"DB seed warning: {ex.Message}"); }
 }
 
 var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
