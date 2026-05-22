@@ -223,10 +223,16 @@ export function ChatPanel({ conversa, mensagens, onSend, onSendTemplate, contasF
     }
   };
 
+  const justSelectedQR = useRef(false);
   const selectQR = (conteudo: string) => {
+    justSelectedQR.current = true;
     setText(conteudo);
     setShowQR(false);
-    setTimeout(() => inputRef.current?.focus(), 0);
+    setTimeout(() => {
+      inputRef.current?.focus();
+      // Reset flag after focus settles so next Enter edits, not sends
+      setTimeout(() => { justSelectedQR.current = false; }, 100);
+    }, 0);
   };
 
   const selectVar = (v: { label: string; key: string; getValue: (c: Conversa) => string }) => {
@@ -250,7 +256,10 @@ export function ChatPanel({ conversa, mensagens, onSend, onSendTemplate, contasF
       if (e.key === "Enter") { e.preventDefault(); selectVar(LEAD_VARS[varIndex]); return; }
       if (e.key === "Escape") { setShowVars(false); return; }
     }
-    if (e.key === "Enter") handleSend();
+    if (e.key === "Enter") {
+      if (justSelectedQR.current) { justSelectedQR.current = false; return; }
+      handleSend();
+    }
   };
 
   const handleAgSave = async () => {
