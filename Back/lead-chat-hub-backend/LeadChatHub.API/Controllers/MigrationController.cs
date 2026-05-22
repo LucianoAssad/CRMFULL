@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using LeadChatHub.Infrastructure.Data;
@@ -5,6 +6,7 @@ using LeadChatHub.Infrastructure.Data;
 namespace LeadChatHub.API.Controllers;
 
 [ApiController]
+[AllowAnonymous]
 [Route("api/admin/migrate")]
 public class MigrationController : ControllerBase
 {

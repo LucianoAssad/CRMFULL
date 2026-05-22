@@ -249,6 +249,34 @@ public class PipelinesController : CrudController<Pipeline>
 {
     public PipelinesController(AppDbContext db) : base(db) { }
 
+    /// <summary>Ensure updated_at column exists before any pipeline query (idempotent self-heal)</summary>
+    private async Task EnsureSchema()
+    {
+        try
+        {
+            var conn = Db.Database.GetDbConnection();
+            if (conn.State != System.Data.ConnectionState.Open) await conn.OpenAsync();
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = @"
+                ALTER TABLE pipelines ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT NOW();
+                ALTER TABLE pipeline_etapas ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT NOW();";
+            await cmd.ExecuteNonQueryAsync();
+        }
+        catch { /* already exists or other harmless error */ }
+    }
+
+    public override async Task<IActionResult> GetAll([FromQuery] int limit = 1000, [FromQuery] int offset = 0)
+    {
+        await EnsureSchema();
+        return await base.GetAll(limit, offset);
+    }
+
+    public override async Task<IActionResult> Create([FromBody] Pipeline entity)
+    {
+        await EnsureSchema();
+        return await base.Create(entity);
+    }
+
     [HttpGet("{id}/with-etapas")]
     public async Task<IActionResult> GetWithEtapas(Guid id)
     {
