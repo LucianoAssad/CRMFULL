@@ -52,7 +52,7 @@ public class AppDbContext : DbContext
     public DbSet<Afiliado> Afiliados => Set<Afiliado>();
     public DbSet<Indicacao> Indicacoes => Set<Indicacao>();
     public DbSet<IntegracaoExterna> IntegracoesExternas => Set<IntegracaoExterna>();
-    public DbSet<BaseConhecimento> BaseConhecimento => Set<BaseConhecimento>();
+    public DbSet<BaseConhecimento> Artigos => Set<BaseConhecimento>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
