@@ -187,8 +187,10 @@ export default function Index() {
       autor: "Atendente",
       lida: true,
     });
-    if (error) toast.error(error.message);
-    // Trigger atualizar_conversa_apos_mensagem already updates ultima_mensagem/updated_at
+    if (error) { toast.error(error.message); return; }
+    // Realtime é stub — recarrega manualmente após envio
+    await loadMensagens(selected.id);
+    loadConversas();
   };
 
   const sendTemplate = async ({ template_id, nome_externo, idioma, variaveis }: { template_id: string; nome_externo: string; idioma: string; variaveis: string[] }) => {
