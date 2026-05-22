@@ -869,7 +869,7 @@ public class BaseConhecimento
     public string Titulo { get; set; } = "";
     public string? Conteudo { get; set; }
     public string Categoria { get; set; } = "geral";
-    public string[]? Tags { get; set; }
+    public string? Tags { get; set; } // comma-separated, ex: "faq,produto,atendimento"
     public bool Publico { get; set; } = false;
     public bool Ativo { get; set; } = true;
     public int Visualizacoes { get; set; } = 0;

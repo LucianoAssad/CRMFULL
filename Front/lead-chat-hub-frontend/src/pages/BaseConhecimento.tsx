@@ -17,7 +17,7 @@ import { toast } from "sonner";
 
 interface Artigo {
   id: string; empresa_id: string; autor_id: string | null; titulo: string;
-  conteudo: string | null; categoria: string; tags: string[] | null;
+  conteudo: string | null; categoria: string; tags: string | null; // comma-separated
   publico: boolean; ativo: boolean; visualizacoes: number; created_at: string; updated_at: string;
 }
 
@@ -54,7 +54,8 @@ export default function BaseConhecimento() {
 
   const filtrados = useMemo(() => artigos.filter((a) => {
     const q = search.toLowerCase();
-    const matchQ = !q || a.titulo.toLowerCase().includes(q) || (a.conteudo || "").toLowerCase().includes(q) || (a.tags || []).some((t) => t.toLowerCase().includes(q));
+    const tagsArr = (a.tags || "").split(",").map((t: string) => t.trim());
+    const matchQ = !q || a.titulo.toLowerCase().includes(q) || (a.conteudo || "").toLowerCase().includes(q) || tagsArr.some((t: string) => t.toLowerCase().includes(q));
     const matchC = catFiltro === "todos" || a.categoria === catFiltro;
     return matchQ && matchC;
   }), [artigos, search, catFiltro]);
@@ -63,11 +64,11 @@ export default function BaseConhecimento() {
     if (!form.titulo.trim()) return toast.error("Título obrigatório");
     if (ids.length === 0) return;
     setSaving(true);
-    const tagsArr = form.tags.split(",").map((t) => t.trim()).filter(Boolean);
+    const tagsStr = form.tags.split(",").map((t) => t.trim()).filter(Boolean).join(",");
     const payload: any = {
       empresa_id: ids[0], autor_id: usuarioId || null, titulo: form.titulo.trim(),
       conteudo: form.conteudo || null, categoria: form.categoria,
-      tags: tagsArr.length ? tagsArr : null, publico: form.publico, ativo: form.ativo,
+      tags: tagsStr || null, publico: form.publico, ativo: form.ativo,
       updated_at: new Date().toISOString(),
     };
     let error;
@@ -84,7 +85,7 @@ export default function BaseConhecimento() {
 
   const openEdit = (a: Artigo) => {
     setEditing(a);
-    setForm({ titulo: a.titulo, conteudo: a.conteudo || "", categoria: a.categoria, tags: (a.tags || []).join(", "), publico: a.publico, ativo: a.ativo });
+    setForm({ titulo: a.titulo, conteudo: a.conteudo || "", categoria: a.categoria, tags: (a.tags || "").replace(/,/g, ", "), publico: a.publico, ativo: a.ativo });
     setOpen(true);
   };
 
@@ -175,7 +176,7 @@ export default function BaseConhecimento() {
                 <div className="flex items-center gap-2 flex-wrap">
                   <Badge variant="secondary" className="text-[10px] capitalize">{a.categoria}</Badge>
                   {a.publico && <Badge variant="outline" className="text-[10px] text-primary border-primary/30"><Globe className="mr-0.5 h-2.5 w-2.5" />Público</Badge>}
-                  {(a.tags || []).slice(0, 2).map((t) => (
+                  {(a.tags || "").split(",").filter(Boolean).slice(0, 2).map((t) => (
                     <Badge key={t} variant="outline" className="text-[10px]"><Tag className="mr-0.5 h-2.5 w-2.5" />{t}</Badge>
                   ))}
                 </div>
@@ -199,7 +200,7 @@ export default function BaseConhecimento() {
               </DialogHeader>
               <div className="flex flex-wrap gap-2 mb-3">
                 <Badge variant="secondary" className="capitalize">{viewing.categoria}</Badge>
-                {(viewing.tags || []).map((t) => <Badge key={t} variant="outline">{t}</Badge>)}
+                {(viewing.tags || "").split(",").filter(Boolean).map((t) => <Badge key={t} variant="outline">{t.trim()}</Badge>)}
               </div>
               <div className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap text-sm leading-relaxed">
                 {viewing.conteudo || <span className="text-muted-foreground italic">Sem conteúdo.</span>}

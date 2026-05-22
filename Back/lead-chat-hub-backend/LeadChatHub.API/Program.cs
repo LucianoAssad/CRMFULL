@@ -531,7 +531,7 @@ using (var scope = app.Services.CreateScope())
                     titulo varchar(300) NOT NULL DEFAULT '',
                     conteudo text NULL,
                     categoria varchar(100) NOT NULL DEFAULT 'geral',
-                    tags text[] NULL,
+                    tags text NULL,
                     publico boolean NOT NULL DEFAULT false,
                     ativo boolean NOT NULL DEFAULT true,
                     visualizacoes int NOT NULL DEFAULT 0,
