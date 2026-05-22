@@ -346,15 +346,6 @@ export default function Dashboard() {
         <CardHeader>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <CardTitle className="text-lg">Performance de Campanhas</CardTitle>
-            <Tabs value={utmKey} onValueChange={(v) => setUtmKey(v as typeof utmKey)} className="w-auto">
-              <TabsList className="h-8 text-xs">
-                <TabsTrigger value="utm_campaign" className="text-xs px-2">Campanha</TabsTrigger>
-                <TabsTrigger value="utm_source" className="text-xs px-2">Source</TabsTrigger>
-                <TabsTrigger value="utm_medium" className="text-xs px-2">Medium</TabsTrigger>
-                <TabsTrigger value="utm_content" className="text-xs px-2">Conjunto</TabsTrigger>
-                <TabsTrigger value="utm_term" className="text-xs px-2">Anúncio</TabsTrigger>
-              </TabsList>
-            </Tabs>
             <Button
               variant="outline"
               size="sm"
@@ -394,7 +385,21 @@ export default function Dashboard() {
             );
           })()}
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-4">
+          {/* Seletor de dimensão UTM */}
+          <div className="space-y-1">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Agrupar por dimensão UTM</p>
+            <Tabs value={utmKey} onValueChange={(v) => setUtmKey(v as typeof utmKey)}>
+              <TabsList>
+                <TabsTrigger value="utm_campaign">Campanha</TabsTrigger>
+                <TabsTrigger value="utm_source">Source</TabsTrigger>
+                <TabsTrigger value="utm_medium">Medium</TabsTrigger>
+                <TabsTrigger value="utm_content">Conjunto</TabsTrigger>
+                <TabsTrigger value="utm_term">Anúncio</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+
           {campanhas.length > 0 && (
             <div className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">

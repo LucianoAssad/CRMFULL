@@ -1109,8 +1109,16 @@ function EtapaNomeInline({ etapa, onSaved }: { etapa: Etapa; onSaved: (nome: str
   const commit = async () => {
     const trimmed = val.trim();
     if (!trimmed || trimmed === etapa.nome) { setEditing(false); return; }
-    const { error } = await supabase.from("pipeline_etapas").update({ nome: trimmed } as any).eq("id", etapa.id);
-    if (error) { toast.error(error.message); setEditing(false); return; }
+    const { error } = await supabase
+      .from("pipeline_etapas")
+      .update({ nome: trimmed, updated_at: new Date().toISOString() } as any)
+      .eq("id", etapa.id);
+    if (error) {
+      console.error("Erro ao renomear etapa:", error);
+      toast.error(typeof error === "string" ? error : (error as any)?.message || "Erro ao salvar");
+      setEditing(false);
+      return;
+    }
     onSaved(trimmed);
     setEditing(false);
     toast.success("Etapa renomeada");

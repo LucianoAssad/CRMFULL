@@ -349,6 +349,9 @@ class QueryBuilder {
       // ---- SELECT (default) ----
       const params: Record<string, string> = { limit: String(this._limit) };
       for (const [key, value] of Object.entries(this.filters)) {
+        // Operadores com __ (gte, lte, neq, ilike, in) ficam só no client-side filter
+        // Só envia params simples ao backend para evitar erro 500 com params desconhecidos
+        if (key.includes("__")) continue;
         params[key] = String(value);
       }
       if (this._orderBy) {

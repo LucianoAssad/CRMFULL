@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Krescer SMKT — Guia de Testes</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 13px; color: #1a1a1a; background: #fff; padding: 32px; max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 26px; color: #16a34a; border-bottom: 3px solid #16a34a; padding-bottom: 10px; margin-bottom: 6px; }
+  h2 { font-size: 17px; color: #fff; background: #16a34a; padding: 7px 14px; border-radius: 6px; margin: 28px 0 10px; page-break-before: auto; }
+  h3 { font-size: 14px; color: #166534; border-left: 4px solid #16a34a; padding-left: 10px; margin: 18px 0 8px; }
+  p { margin: 5px 0; line-height: 1.6; }
+  ul { margin: 6px 0 6px 20px; }
+  li { margin: 3px 0; line-height: 1.6; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 12px; }
+  th { background: #f0fdf4; color: #166534; font-weight: 600; text-align: left; padding: 7px 10px; border: 1px solid #bbf7d0; }
+  td { padding: 6px 10px; border: 1px solid #d1fae5; vertical-align: top; }
+  tr:nth-child(even) td { background: #f9fafb; }
+  code { background: #f0fdf4; color: #166534; padding: 1px 6px; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 12px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+  .badge-green { background: #dcfce7; color: #166534; }
+  .badge-blue  { background: #dbeafe; color: #1e40af; }
+  .badge-yellow{ background: #fef9c3; color: #854d0e; }
+  .url { font-family: monospace; font-size: 11px; color: #6b7280; background: #f9fafb; padding: 3px 8px; border-radius: 4px; border: 1px solid #e5e7eb; display: inline-block; margin: 2px 0; }
+  .section-meta { font-size: 11px; color: #6b7280; margin-bottom: 8px; }
+  .caminho { background: #fefce8; border: 1px solid #fde68a; border-radius: 5px; padding: 6px 10px; margin: 6px 0; font-size: 12px; }
+  .caminho strong { color: #92400e; }
+  .tip { background: #eff6ff; border-left: 3px solid #3b82f6; padding: 6px 10px; border-radius: 0 5px 5px 0; font-size: 12px; color: #1e40af; margin: 6px 0; }
+  .warning { background: #fff7ed; border-left: 3px solid #f97316; padding: 6px 10px; border-radius: 0 5px 5px 0; font-size: 12px; color: #9a3412; margin: 6px 0; }
+  hr { border: none; border-top: 1px solid #e5e7eb; margin: 20px 0; }
+  .header-info { display: flex; gap: 20px; margin-bottom: 20px; flex-wrap: wrap; }
+  .header-card { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 10px 16px; flex: 1; min-width: 180px; }
+  .header-card .label { font-size: 10px; text-transform: uppercase; color: #6b7280; font-weight: 600; }
+  .header-card .value { font-size: 14px; font-weight: 600; color: #16a34a; }
+  .status-table td:last-child { font-weight: 700; color: #16a34a; }
+  @media print {
+    body { padding: 15px; font-size: 11px; }
+    h2 { page-break-before: auto; }
+    h3 { page-break-after: avoid; }
+    .no-break { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<h1>📋 Krescer SMKT — Guia de Testes</h1>
+<p style="color:#6b7280;margin-bottom:16px">Documento de validação funcional · Maio 2026</p>
+
+<div class="header-info">
+  <div class="header-card"><div class="label">URL de produção</div><div class="value" style="font-size:11px">diplomatic-reprieve-production-d59c.up.railway.app</div></div>
+  <div class="header-card"><div class="label">Login</div><div class="value">admin@admin.com</div></div>
+  <div class="header-card"><div class="label">Perfil</div><div class="value">Super Admin</div></div>
+  <div class="header-card"><div class="label">Total de features</div><div class="value">40+ features</div></div>
+</div>
+
+<!-- ========== P0 ========== -->
+<h2>🟢 P0 — Base e Correções</h2>
+
+<div class="no-break">
+<h3>✅ Dashboard com métricas</h3>
+<div class="caminho"><strong>Caminho:</strong> Menu lateral → Dashboard</div>
+<ul>
+  <li>Verificar cards: Total de leads, Conversas abertas, Oportunidades, Vendas, Valor ganho (verde), Valor perdido (vermelho)</li>
+  <li>Gráfico "Novos contatos por dia" — últimos 30 dias</li>
+  <li>Tabela "Performance de Campanhas"</li>
+  <li>Trocar abas UTM: <code>Campanha / Source / Medium / Conjunto / Anúncio</code> — tabela muda</li>
+  <li>Filtrar por empresa e por período (De / Até)</li>
+</ul>
+</div>
+
+<div class="no-break">
+<h3>✅ Pipeline — Editar coluna inline</h3>
+<div class="caminho"><strong>Caminho:</strong> Menu lateral → Pipeline</div>
+<ul>
+  <li>Clicar no <strong>nome de uma coluna</strong> (ex: "Novo") — campo de edição aparece</li>
+  <li>Digitar novo nome e pressionar <code>Enter</code> — salva</li>
+  <li>Pressionar <code>Escape</code> — cancela sem salvar</li>
+</ul>
+</div>
+
+<!-- ========== P1 ========== -->
+<h2>🔵 P1 — Features de Atendimento</h2>
+
+<div class="no-break">
+<h3>✅ Mensagens rápidas via "/"</h3>
+<div class="caminho"><strong>Caminho:</strong> Atendimento → selecionar conversa → campo de mensagem</div>
+<ul>
+  <li>Digitar <code>/</code> — lista de respostas rápidas aparece acima do input</li>
+  <li>Continuar digitando para filtrar (ex: <code>/ola</code>)</li>
+  <li>Usar <code>↑ ↓</code> para navegar, <code>Enter</code> para selecionar</li>
+  <li>Clicar numa opção com o mouse</li>
+</ul>
+</div>
+
+<div class="no-break">
+<h3>✅ Variáveis do contato via "\"</h3>
+<div class="caminho"><strong>Caminho:</strong> Atendimento → selecionar conversa → campo de mensagem</div>
+<ul>
+  <li>Digitar <code>\</code> — popup de variáveis aparece</li>
+  <li>Opções: Nome, Primeiro nome, Telefone, Email, CPF, Cidade, Estado</li>
+  <li>Clicar numa variável — substitui <code>\</code> pelo valor real do contato</li>
+  <li>Pressionar <code>Escape</code> — fecha sem substituir</li>
+</ul>
+</div>
+
+<div class="no-break">
+<h3>✅ Gravar áudio (PTT)</h3>
+<div class="caminho"><strong>Caminho:</strong> Atendimento → selecionar conversa → ícone 🎙️ (campo vazio)</div>
+<div class="warning">⚠️ Pré-requisito: o campo de mensagem deve estar vazio para aparecer o ícone de microfone</div>
+<ul>
+  <li>Clicar no ícone de microfone — browser solicita permissão de microfone</li>
+  <li>Permitir — cronômetro aparece (00:00)</li>
+  <li>Falar a mensagem</li>
+  <li>Clicar em <strong>Send</strong> (ícone verde) — envia</li>
+  <li>Clicar no <strong>quadrado (■)</strong> — cancela sem enviar</li>
+</ul>
+</div>
+
+<div class="no-break">
+<h3>✅ Catálogo de produtos no chat</h3>
+<div class="caminho"><strong>Caminho:</strong> Atendimento → selecionar conversa → ícone 📦</div>
+<ul>
+  <li>Clicar no ícone de caixinha na barra de ferramentas do chat</li>
+  <li>Dialog com lista de produtos abre</li>
+  <li>Buscar produto pelo nome</li>
+  <li>Clicar num produto — texto formatado é inserido no campo de mensagem</li>
+  <li>Editar o texto e enviar normalmente</li>
+</ul>
+<div class="tip">💡 Também disponível em: ícone ⋮ (três pontos) → "Catálogo de produtos"</div>
+</div>
+
+<div class="no-break">
+<h3>✅ Agendar mensagem</h3>
+<div class="caminho"><strong>Caminho:</strong> Atendimento → conversa → ícone ⋮ → "Agendar mensagem"</div>
+<ul>
+  <li>Clicar nos três pontos no header da conversa</li>
+  <li>Clicar em "Agendar mensagem"</li>
+  <li>Preencher: texto da mensagem, data e hora</li>
+  <li>Clicar em "Agendar" — mensagem salva para envio futuro</li>
+</ul>
+</div>
+
+<div class="no-break">
+<h3>✅ Saudação automática</h3>
+<div class="caminho"><strong>Caminho:</strong> Menu lateral → Configurações → seção "Saudação automática"</div>
+<ul>
+  <li>Ativar o toggle Ativo/Inativo</li>
+  <li>Adicionar até 5 mensagens com delay configurável (segundos)</li>
+  <li>Usar variáveis: <code>{{nome}}</code>, <code>{{telefone}}</code></li>
+  <li>Clicar em Salvar</li>
+</ul>
+</div>
+
+<div class="no-break">
+<h3>✅ CEP autocomplete</h3>
+<div class="caminho"><strong>Caminho:</strong> Atendimento → conversa → painel direito → "Cadastro completo" → campo CEP</div>
+<ul>
+  <li>Digitar um CEP válido (ex: <code>22041001</code>)</li>
+  <li>Rua, Bairro, Cidade e Estado preenchem automaticamente via API ViaCEP</li>
+</ul>
+</div>
+
+<div class="no-break">
+<h3>✅ Gênero do lead</h3>
+<div class="caminho"><strong>Caminho:</strong> Atendimento → conversa → painel direito → "Cadastro completo"</div>
+<ul>
+  <li>Campo "Gênero": Não definido / Masculino / Feminino / Outro</li>
+  <li>Selecionar e clicar "Salvar alterações"</li>
+</ul>
+</div>
+
+<div class="no-break">
+<h3>✅ Token CAPI Meta e Vínculo por canal</h3>
+<div class="caminho"><strong>Caminho:</strong> Menu lateral → Conversões → aba Configurações → Meta Ads</div>
+<ul>
+  <li>Campo "Token de acesso CAPI" com toggle mostrar/ocultar</li>
+  <li>Select "Vincular ao número/instância WhatsApp" — vincula canal ao pixel</li>
+</ul>
+</div>
+
+<!-- ========== P2 ========== -->
+<h2>🟣 P2 — Novas Funcionalidades</h2>
+
+<div class="no-break">
+<h3>✅ Agendamentos — Calendário</h3>
+<div class="caminho"><strong>Caminho:</strong> Menu lateral → Agendamentos</div>
+<ul>
+  <li>Calendário mensal: navegar meses com ← →, clicar "Hoje" para voltar</li>
+  <li>Clicar num dia → painel direito exibe agendamentos daquele dia</li>
+  <li>Duplo clique num dia → abre modal de novo agendamento naquela data</li>
+  <li>Botão "Novo agendamento" → formulário completo: título, tipo, lead, responsável, local, link de reunião, lembrete</li>
+  <li>Tipos: 🤝 Reunião · 📞 Ligação · 🏠 Visita · ✅ Tarefa · 🔔 Follow-up</li>
+  <li>Marcar como <strong>Concluído</strong> ou <strong>Cancelar</strong> diretamente no card</li>
+  <li>Aba <strong>Lista</strong>: exibe todos os agendamentos cronologicamente</li>
+</ul>
+<div class="tip">💡 Também disponível no chat: ícone ⋮ → "Criar agendamento" (vincula à conversa atual)</div>
+</div>
+
+<div class="no-break">
+<h3>✅ Agendamentos no painel do lead</h3>
+<div class="caminho"><strong>Caminho:</strong> Atendimento → conversa → painel direito → seção "Agendamentos"</div>
+<ul>
+  <li>Lista de agendamentos do lead com status</li>
+  <li>Marcar como concluído / cancelar inline</li>
+  <li>Criar novo agendamento direto no painel</li>
+</ul>
+</div>
+
+<div class="no-break">
+<h3>✅ Chatbot &amp; Fluxos automáticos</h3>
+<div class="caminho"><strong>Caminho:</strong> Menu lateral → Chatbot &amp; Fluxos</div>
+<table>
+  <tr><th>Aba</th><th>O que configurar</th></tr>
+  <tr><td><strong>Saudação automática</strong></td><td>Até 5 mensagens com delay. Variáveis: <code>{{nome}}</code></td></tr>
+  <tr><td><strong>Menu interativo</strong></td><td>Cabeçalho + opções numeradas com respostas automáticas</td></tr>
+  <tr><td><strong>Palavras-chave</strong></td><td>Palavra → resposta automática (modo exato ou parcial)</td></tr>
+  <tr><td><strong>Assistente IA</strong></td><td>Prompt do sistema + modelo GPT + token OpenAI</td></tr>
+  <tr><td><strong>Fora do horário</strong></td><td>Mensagem automática fora do expediente</td></tr>
+</table>
+<ul style="margin-top:8px">
+  <li>Cada fluxo: toggle Ativo/Inativo, vincular a canal específico</li>
+  <li>Configurar dias da semana e horário de funcionamento</li>
+</ul>
+</div>
+
+<div class="no-break">
+<h3>✅ Grupos WhatsApp</h3>
+<div class="caminho"><strong>Caminho:</strong> Menu lateral → Grupos WhatsApp</div>
+<ul>
+  <li>Exibe aviso se não houver canal Evolution API ou WPPConnect conectado</li>
+  <li>Botão "Registrar grupo" → nome, canal, JID do grupo, descrição</li>
+  <li>Editar e remover grupos cadastrados</li>
+</ul>
+</div>
+
+<!-- ========== P3 ========== -->
+<h2>🟠 P3 — Integrações e Crescimento</h2>
+
+<div class="no-break">
+<h3>✅ Afiliados</h3>
+<div class="caminho"><strong>Caminho:</strong> Menu lateral → Afiliados</div>
+<ul>
+  <li>KPIs no topo: afiliados, ativos, indicações, convertidas, comissão total, pendente pagar</li>
+  <li>Aba <strong>Afiliados</strong>: cadastrar com código (auto-gerado), % comissão, copiar link de indicação</li>
+  <li>Aba <strong>Indicações</strong>: registrar indicação, mudar status (pendente → contatado → convertido → perdido)</li>
+  <li>Quando convertido: inserir valor da venda, clicar "Marcar pago" para quitar comissão</li>
+</ul>
+</div>
+
+<div class="no-break">
+<h3>✅ Integrações externas</h3>
+<div class="caminho"><strong>Caminho:</strong> Menu lateral → Integrações</div>
+<table>
+  <tr><th>Plataforma</th><th>Tipo</th><th>Como configurar</th></tr>
+  <tr><td>⚡ Zapier</td><td>Webhook</td><td>Copiar URL gerado e colar no Zap como destino</td></tr>
+  <tr><td>🔷 Make</td><td>Webhook</td><td>Copiar URL e usar no cenário Make</td></tr>
+  <tr><td>🔄 n8n</td><td>Webhook</td><td>Copiar URL e usar no nó Webhook do n8n</td></tr>
+  <tr><td>📊 Google Sheets</td><td>Webhook</td><td>Via Apps Script — usar URL gerado</td></tr>
+  <tr><td>🚀 RD Station</td><td>API Key</td><td>Colar API key da conta RD Station</td></tr>
+  <tr><td>🟠 HubSpot</td><td>API Key</td><td>Colar token de acesso privado do HubSpot</td></tr>
+  <tr><td>📧 ActiveCampaign</td><td>API Key</td><td>Colar URL + API key do ActiveCampaign</td></tr>
+  <tr><td>🎯 Pipedrive</td><td>API Key</td><td>Colar API token do Pipedrive</td></tr>
+</table>
+</div>
+
+<div class="no-break">
+<h3>✅ Base de Conhecimento</h3>
+<div class="caminho"><strong>Caminho:</strong> Menu lateral → Base de Conhecimento</div>
+<ul>
+  <li>Botão "Novo artigo" → título, categoria, tags, conteúdo em <strong>Markdown</strong></li>
+  <li>Toggle "Visível para clientes" — artigo público ou privado</li>
+  <li>Buscar artigo por nome, conteúdo ou tag</li>
+  <li>Filtrar por categoria: geral, produto, atendimento, técnico, financeiro, vendas, políticas, FAQ</li>
+  <li>Clicar no card → abre modal de leitura com contador de visualizações</li>
+  <li>Editar e excluir artigos</li>
+</ul>
+</div>
+
+<div class="no-break">
+<h3>✅ Comunidade</h3>
+<div class="caminho"><strong>Caminho:</strong> Menu lateral → Comunidade</div>
+<ul>
+  <li>Página com roadmap de features futuras</li>
+  <li>Links de suporte: WhatsApp, YouTube, grupo de usuários</li>
+  <li>Histórico de últimas atualizações da plataforma</li>
+</ul>
+</div>
+
+<div class="no-break">
+<h3>✅ Áudio WABA MP3 (OGG/Opus)</h3>
+<div class="caminho"><strong>Caminho:</strong> Atendimento → conversa em canal Cloud API → ícone 🎙️</div>
+<ul>
+  <li>Para canais WhatsApp Cloud API oficial, o áudio é automaticamente convertido para OGG/Opus</li>
+  <li>Formato compatível com a API oficial do WhatsApp (WABA)</li>
+  <li>Para outros canais, envia em WebM como fallback</li>
+</ul>
+</div>
+
+<!-- ========== BUGS ========== -->
+<h2>🐛 Como Reportar Bugs</h2>
+
+<ol>
+  <li><strong>Print da tela</strong> com o erro visível</li>
+  <li><strong>Caminho percorrido</strong> para reproduzir o problema</li>
+  <li><strong>Console do browser</strong>: pressionar <code>F12</code> → aba Console → copiar mensagem vermelha</li>
+  <li>Descrever o comportamento esperado vs. o que aconteceu</li>
+</ol>
+
+<hr>
+
+<!-- ========== STATUS ========== -->
+<h2>📊 Status Geral</h2>
+
+<table class="status-table">
+  <tr><th>Bloco</th><th>Principais features</th><th>Status</th></tr>
+  <tr><td><span class="badge badge-green">P0</span> Base</td><td>Dashboard UTM, Pipeline inline edit, Filtros atendimento</td><td>✅ Produção</td></tr>
+  <tr><td><span class="badge badge-blue">P1</span> Chat</td><td>Quick replies /, Variáveis \, PTT áudio, Catálogo, Saudação, CEP, CAPI</td><td>✅ Produção</td></tr>
+  <tr><td><span class="badge badge-yellow">P2</span> Funcionalidades</td><td>Agendamentos, Chatbot &amp; Fluxos, Catálogo chat, Grupos WhatsApp</td><td>✅ Produção</td></tr>
+  <tr><td><span class="badge" style="background:#fed7aa;color:#9a3412">P3</span> Integrações</td><td>Afiliados, Integrações externas, Base de Conhecimento, Comunidade</td><td>✅ Produção</td></tr>
+</table>
+
+<p style="text-align:center;margin-top:30px;color:#9ca3af;font-size:11px">
+  Krescer SMKT · Gerado em 20/05/2026 · 40+ features implementadas 🚀
+</p>
+
+</body>
+</html>
