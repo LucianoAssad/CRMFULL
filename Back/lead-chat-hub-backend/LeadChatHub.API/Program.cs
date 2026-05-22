@@ -1,3 +1,4 @@
+// v3 - P2/P3 controllers: conversa-notas, contas-vinculos, agendamentos, chatbot, afiliados, integracoes, base-conhecimento
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
