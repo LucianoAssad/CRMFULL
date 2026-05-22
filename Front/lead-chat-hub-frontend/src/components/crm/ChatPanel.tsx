@@ -991,6 +991,18 @@ function TemplateDialog({
   );
 }
 
+function MsgContent({ conteudo }: { conteudo: string }) {
+  // Detecta áudio base64: [audio:webm:BASE64] ou [audio:ogg:BASE64]
+  const audioMatch = conteudo.match(/^\[audio:(webm|ogg|mp3|mpeg):(.+)\]$/s);
+  if (audioMatch) {
+    const [, ext, b64] = audioMatch;
+    const mime = ext === "ogg" ? "audio/ogg" : ext === "mp3" || ext === "mpeg" ? "audio/mpeg" : "audio/webm";
+    const src = `data:${mime};base64,${b64}`;
+    return <audio controls src={src} className="max-w-[240px]" />;
+  }
+  return <p className="whitespace-pre-wrap break-words">{conteudo}</p>;
+}
+
 function Bubble({ m }: { m: Mensagem }) {
   const out = m.direcao === "outbound";
   return (
@@ -1001,7 +1013,7 @@ function Bubble({ m }: { m: Mensagem }) {
           out ? "rounded-br-sm bg-chat-bubble-out text-foreground" : "rounded-bl-sm bg-chat-bubble-in text-foreground"
         )}
       >
-        <p className="whitespace-pre-wrap break-words">{m.conteudo}</p>
+        <MsgContent conteudo={m.conteudo} />
         <p className="mt-1 text-right text-[10px] text-muted-foreground">
           {format(new Date(m.created_at), "HH:mm")}
         </p>
