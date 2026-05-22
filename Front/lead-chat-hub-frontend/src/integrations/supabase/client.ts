@@ -244,6 +244,17 @@ class QueryBuilder {
     return out;
   }
 
+  /** Convert snake_case keys → camelCase before sending to backend */
+  private toCamel(obj: any): any {
+    if (!obj || typeof obj !== "object" || Array.isArray(obj)) return obj;
+    const out: Record<string, any> = {};
+    for (const [k, v] of Object.entries(obj)) {
+      const camelKey = k.replace(/_([a-z0-9])/g, (_, c) => c.toUpperCase());
+      out[camelKey] = v;
+    }
+    return out;
+  }
+
   private normalize(data: any) {
     if (Array.isArray(data)) return data.map((r) => this.addSnakeKeys(r));
     return data ? this.addSnakeKeys(data) : data;
@@ -255,7 +266,7 @@ class QueryBuilder {
       if (this._operation === "insert") {
         const payloads = Array.isArray(this._payload) ? this._payload : [this._payload];
         if (payloads.length === 1) {
-          const { data: result } = await api.post(`/${this.route}`, payloads[0]);
+          const { data: result } = await api.post(`/${this.route}`, this.toCamel(payloads[0]));
           const normalized = this.normalize(result);
           if (this._single || this._maybeSingle) return { data: Array.isArray(normalized) ? normalized[0] ?? null : normalized, error: null };
           return { data: normalized, error: null };
@@ -265,7 +276,7 @@ class QueryBuilder {
         const results: any[] = [];
         for (let i = 0; i < payloads.length; i += BATCH) {
           const batch = payloads.slice(i, i + BATCH);
-          const batchResults = await Promise.allSettled(batch.map((p: any) => api.post(`/${this.route}`, p)));
+          const batchResults = await Promise.allSettled(batch.map((p: any) => api.post(`/${this.route}`, this.toCamel(p))));
           for (const r of batchResults) {
             if (r.status === "fulfilled") results.push(r.value.data);
           }
@@ -279,7 +290,7 @@ class QueryBuilder {
         const id = this.filters["id"];
         const idIn = this.filters["id__in"];
         if (id) {
-          const { data: result } = await api.patch(`/${this.route}/${id}`, this._payload);
+          const { data: result } = await api.patch(`/${this.route}/${id}`, this.toCamel(this._payload));
           const normalized = this.normalize(result);
           if (this._single || this._maybeSingle) return { data: Array.isArray(normalized) ? normalized[0] ?? null : normalized, error: null };
           return { data: normalized, error: null };
@@ -289,7 +300,7 @@ class QueryBuilder {
           const results = [];
           for (const bid of ids) {
             try {
-              const { data: r } = await api.patch(`/${this.route}/${bid}`, this._payload);
+              const { data: r } = await api.patch(`/${this.route}/${bid}`, this.toCamel(this._payload));
               results.push(r);
             } catch { /* ignore individual errors */ }
           }
@@ -313,10 +324,10 @@ class QueryBuilder {
         }
         let result;
         if (id) {
-          const { data: r } = await api.patch(`/${this.route}/${id}`, this._payload);
+          const { data: r } = await api.patch(`/${this.route}/${id}`, this.toCamel(this._payload));
           result = r;
         } else {
-          const { data: r } = await api.post(`/${this.route}`, this._payload);
+          const { data: r } = await api.post(`/${this.route}`, this.toCamel(this._payload));
           result = r;
         }
         const normalized = this.normalize(result);
