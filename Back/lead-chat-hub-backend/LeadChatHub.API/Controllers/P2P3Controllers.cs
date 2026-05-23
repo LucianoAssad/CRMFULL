@@ -5,52 +5,55 @@ using LeadChatHub.Infrastructure.Data;
 
 namespace LeadChatHub.API.Controllers;
 
+// P2/P3 controllers — class names use suffix "Ex" to avoid duplicate-name compile error
+// Route attributes are the real API paths used by the frontend.
+
 [ApiController, Route("api/mensagens-programadas")]
-public class MensagensProgramadasController : CrudController<MensagemProgramada>
+public class MensagensProgramadasExController : CrudController<MensagemProgramada>
 {
-    public MensagensProgramadasController(AppDbContext db) : base(db) { }
+    public MensagensProgramadasExController(AppDbContext db) : base(db) { }
 }
 
 [ApiController, Route("api/agendamentos")]
-public class AgendamentosController : CrudController<Agendamento>
+public class AgendamentosExController : CrudController<Agendamento>
 {
-    public AgendamentosController(AppDbContext db) : base(db) { }
+    public AgendamentosExController(AppDbContext db) : base(db) { }
 }
 
 [ApiController, Route("api/chatbot-fluxos")]
-public class ChatbotFluxosController : CrudController<ChatbotFluxo>
+public class ChatbotFluxosExController : CrudController<ChatbotFluxo>
 {
-    public ChatbotFluxosController(AppDbContext db) : base(db) { }
+    public ChatbotFluxosExController(AppDbContext db) : base(db) { }
 }
 
 [ApiController, Route("api/afiliados")]
-public class AfiliadosController : CrudController<Afiliado>
+public class AfiliadosExController : CrudController<Afiliado>
 {
-    public AfiliadosController(AppDbContext db) : base(db) { }
+    public AfiliadosExController(AppDbContext db) : base(db) { }
 }
 
 [ApiController, Route("api/indicacoes")]
-public class IndicacoesController : CrudController<Indicacao>
+public class IndicacoesExController : CrudController<Indicacao>
 {
-    public IndicacoesController(AppDbContext db) : base(db) { }
+    public IndicacoesExController(AppDbContext db) : base(db) { }
 }
 
 [ApiController, Route("api/integracoes-externas")]
-public class IntegracoesExternasController : CrudController<IntegracaoExterna>
+public class IntegracoesExternasExController : CrudController<IntegracaoExterna>
 {
-    public IntegracoesExternasController(AppDbContext db) : base(db) { }
+    public IntegracoesExternasExController(AppDbContext db) : base(db) { }
 }
 
 [ApiController, Route("api/base-conhecimento")]
-public class BaseConhecimentoController : CrudController<BaseConhecimento>
+public class BaseConhecimentoExController : CrudController<BaseConhecimento>
 {
-    public BaseConhecimentoController(AppDbContext db) : base(db) { }
+    public BaseConhecimentoExController(AppDbContext db) : base(db) { }
 }
 
 [ApiController, Route("api/conversa-notas")]
-public class ConversaNotasV2Controller : CrudController<ConversaNota>
+public class ConversaNotasExController : CrudController<ConversaNota>
 {
-    public ConversaNotasV2Controller(AppDbContext db) : base(db) { }
+    public ConversaNotasExController(AppDbContext db) : base(db) { }
 
     [HttpGet("by-conversa/{conversaId}")]
     public async Task<IActionResult> GetByConversa(Guid conversaId)
@@ -64,31 +67,31 @@ public class ConversaNotasV2Controller : CrudController<ConversaNota>
 }
 
 [ApiController, Route("api/contas-vinculos")]
-public class ContasVinculosV2Controller : CrudController<ContaVinculo>
+public class ContasVinculosExController : CrudController<ContaVinculo>
 {
-    public ContasVinculosV2Controller(AppDbContext db) : base(db) { }
+    public ContasVinculosExController(AppDbContext db) : base(db) { }
 }
 
 [ApiController, Route("api/solicitacoes-vinculo-conta")]
-public class SolicitacoesVinculoContaV2Controller : CrudController<SolicitacaoVinculoConta>
+public class SolicitacoesVinculoContaExController : CrudController<SolicitacaoVinculoConta>
 {
-    public SolicitacoesVinculoContaV2Controller(AppDbContext db) : base(db) { }
+    public SolicitacoesVinculoContaExController(AppDbContext db) : base(db) { }
 }
 
 [ApiController, Route("api/conversao-destinos")]
-public class ConversaoDestinosV2Controller : CrudController<ConversaoDestino>
+public class ConversaoDestinosExController : CrudController<ConversaoDestino>
 {
-    public ConversaoDestinosV2Controller(AppDbContext db) : base(db) { }
+    public ConversaoDestinosExController(AppDbContext db) : base(db) { }
 }
 
 [ApiController, Route("api/exportacoes-conversoes")]
-public class ExportacoesConversoesV2Controller : CrudController<ExportacaoConversao>
+public class ExportacoesConversoesExController : CrudController<ExportacaoConversao>
 {
-    public ExportacoesConversoesV2Controller(AppDbContext db) : base(db) { }
+    public ExportacoesConversoesExController(AppDbContext db) : base(db) { }
 }
 
 [ApiController, Route("api/configuracoes-conversao")]
-public class ConfiguracoesConversaoController : CrudController<ConfiguracaoConversao>
+public class ConfiguracoesConversaoExController : CrudController<ConfiguracaoConversao>
 {
-    public ConfiguracoesConversaoController(AppDbContext db) : base(db) { }
+    public ConfiguracoesConversaoExController(AppDbContext db) : base(db) { }
 }
