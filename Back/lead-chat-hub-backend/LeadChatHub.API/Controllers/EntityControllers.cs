@@ -425,110 +425,11 @@ public class PerfilComercialController : CrudController<PerfilComercial>
     }
 }
 
-// ===================== SolicitacoesVinculoConta =====================
-[ApiController, Route("api/solicitacoes-vinculo-conta")]
-public class SolicitacoesVinculoContaController : CrudController<SolicitacaoVinculoConta>
-{
-    public SolicitacoesVinculoContaController(AppDbContext db) : base(db) { }
-}
-
-// ===================== ContasVinculos =====================
-[ApiController, Route("api/contas-vinculos")]
-public class ContasVinculosController : CrudController<ContaVinculo>
-{
-    public ContasVinculosController(AppDbContext db) : base(db) { }
-}
-
 // ===================== AuditLogs =====================
 [ApiController, Route("api/audit-logs")]
 public class AuditLogsController : CrudController<AuditLog>
 {
     public AuditLogsController(AppDbContext db) : base(db) { }
 }
-
-// ===================== ConversaNotas =====================
-[ApiController, Route("api/conversa-notas")]
-public class ConversaNotasController : CrudController<ConversaNota>
-{
-    public ConversaNotasController(AppDbContext db) : base(db) { }
-
-    [HttpGet("by-conversa/{conversaId}")]
-    public async Task<IActionResult> GetByConversa(Guid conversaId)
-    {
-        var items = await Db.ConversaNotas
-            .Where(n => n.ConversaId == conversaId)
-            .OrderBy(n => n.CreatedAt)
-            .ToListAsync();
-        return Ok(items);
-    }
-}
-
-// ===================== ConversaoDestinos =====================
-[ApiController, Route("api/conversao-destinos")]
-public class ConversaoDestinosController : CrudController<ConversaoDestino>
-{
-    public ConversaoDestinosController(AppDbContext db) : base(db) { }
-}
-
-// ===================== ExportacoesConversoes =====================
-[ApiController, Route("api/exportacoes-conversoes")]
-public class ExportacoesConversoesController : CrudController<ExportacaoConversao>
-{
-    public ExportacoesConversoesController(AppDbContext db) : base(db) { }
-}
-
-// ===================== ConfiguracoesConversao =====================
-[ApiController, Route("api/configuracoes-conversao")]
-public class ConfiguracoesConversaoController : CrudController<ConfiguracaoConversao>
-{
-    public ConfiguracoesConversaoController(AppDbContext db) : base(db) { }
-}
-
-// ===================== MensagensProgramadas =====================
-[ApiController, Route("api/mensagens-programadas")]
-public class MensagensProgramadasController : CrudController<MensagemProgramada>
-{
-    public MensagensProgramadasController(AppDbContext db) : base(db) { }
-}
-
-// ===================== Agendamentos =====================
-[ApiController, Route("api/agendamentos")]
-public class AgendamentosController : CrudController<Agendamento>
-{
-    public AgendamentosController(AppDbContext db) : base(db) { }
-}
-
-// ===================== ChatbotFluxos =====================
-[ApiController, Route("api/chatbot-fluxos")]
-public class ChatbotFluxosController : CrudController<ChatbotFluxo>
-{
-    public ChatbotFluxosController(AppDbContext db) : base(db) { }
-}
-
-// ===================== Afiliados =====================
-[ApiController, Route("api/afiliados")]
-public class AfiliadosController : CrudController<Afiliado>
-{
-    public AfiliadosController(AppDbContext db) : base(db) { }
-}
-
-// ===================== Indicacoes =====================
-[ApiController, Route("api/indicacoes")]
-public class IndicacoesController : CrudController<Indicacao>
-{
-    public IndicacoesController(AppDbContext db) : base(db) { }
-}
-
-// ===================== IntegracoesExternas =====================
-[ApiController, Route("api/integracoes-externas")]
-public class IntegracoesExternasController : CrudController<IntegracaoExterna>
-{
-    public IntegracoesExternasController(AppDbContext db) : base(db) { }
-}
-
-// ===================== BaseConhecimento =====================
-[ApiController, Route("api/base-conhecimento")]
-public class BaseConhecimentoController : CrudController<BaseConhecimento>
-{
-    public BaseConhecimentoController(AppDbContext db) : base(db) { }
-}
+// NOTE: P2/P3 controllers (agendamentos, mensagens-programadas, conversa-notas, etc.)
+// are defined in P2P3Controllers.cs to avoid duplicate class name conflicts.
