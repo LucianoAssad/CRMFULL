@@ -1,4 +1,4 @@
-// v3 - P2/P3 controllers: conversa-notas, contas-vinculos, agendamentos, chatbot, afiliados, integracoes, base-conhecimento
+// v4 - P2/P3 column mapping fix: [Column("lowercase")] added to all P2/P3 entity properties
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -165,7 +165,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapHub<ChatHub>("/hubs/chat");
-app.MapGet("/health", () => Results.Ok(new { status = "ok", version = "v3-p2p3" }));
+app.MapGet("/health", () => Results.Ok(new { status = "ok", version = "v4-column-fix" }));
 
 // Auto-migrate on startup (optional, can be disabled in production)
 using (var scope = app.Services.CreateScope())

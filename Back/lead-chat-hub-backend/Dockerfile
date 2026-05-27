@@ -8,7 +8,7 @@ COPY LeadChatHub.Application/*.csproj LeadChatHub.Application/
 COPY LeadChatHub.API/*.csproj LeadChatHub.API/
 RUN dotnet restore
 
-ARG CACHEBUST=9
+ARG CACHEBUST=10
 COPY . .
 RUN dotnet publish LeadChatHub.API/LeadChatHub.API.csproj -c Release -o /app/publish
 

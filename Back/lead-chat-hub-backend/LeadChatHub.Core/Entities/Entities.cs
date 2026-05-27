@@ -622,13 +622,13 @@ public class RefreshToken
 [Table("solicitacoes_vinculo_conta")]
 public class SolicitacaoVinculoConta
 {
-    [Key] public Guid Id { get; set; } = Guid.NewGuid();
+    [Key][Column("id")] public Guid Id { get; set; } = Guid.NewGuid();
     [Column("conta_solicitante_id")] public Guid ContaSolicitanteId { get; set; }
     [Column("conta_alvo_id")] public Guid ContaAlvoId { get; set; }
     [Column("tipo_solicitacao")] public string TipoSolicitacao { get; set; } = "vinculo";
     [Column("tipo_vinculo_solicitado")] public string? TipoVinculoSolicitado { get; set; }
-    public string Status { get; set; } = "pendente";
-    public string? Mensagem { get; set; }
+    [Column("status")] public string Status { get; set; } = "pendente";
+    [Column("mensagem")] public string? Mensagem { get; set; }
     [Column("respondido_por")] public Guid? RespondidoPor { get; set; }
     [Column("respondido_em")] public DateTime? RespondidoEm { get; set; }
     [Column("created_by")] public Guid? CreatedBy { get; set; }
@@ -639,13 +639,13 @@ public class SolicitacaoVinculoConta
 [Table("contas_vinculos")]
 public class ContaVinculo
 {
-    [Key] public Guid Id { get; set; } = Guid.NewGuid();
+    [Key][Column("id")] public Guid Id { get; set; } = Guid.NewGuid();
     [Column("conta_gerente_id")] public Guid ContaGerenteId { get; set; }
     [Column("conta_alvo_id")] public Guid ContaAlvoId { get; set; }
     [Column("tipo_vinculo")] public string TipoVinculo { get; set; } = "gerenciamento";
-    public string Status { get; set; } = "ativo";
-    public bool Principal { get; set; } = false;
-    public string Origem { get; set; } = "manual";
+    [Column("status")] public string Status { get; set; } = "ativo";
+    [Column("principal")] public bool Principal { get; set; } = false;
+    [Column("origem")] public string Origem { get; set; } = "manual";
     [Column("solicitacao_id")] public Guid? SolicitacaoId { get; set; }
     [Column("created_by")] public Guid? CreatedBy { get; set; }
     [Column("created_at")] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
@@ -670,12 +670,12 @@ public class AuditLog
 [Table("conversa_notas")]
 public class ConversaNota
 {
-    [Key] public Guid Id { get; set; } = Guid.NewGuid();
+    [Key][Column("id")] public Guid Id { get; set; } = Guid.NewGuid();
     [Column("empresa_id")] public Guid EmpresaId { get; set; }
     [Column("conversa_id")] public Guid ConversaId { get; set; }
     [Column("usuario_id")] public Guid? UsuarioId { get; set; }
-    public string Conteudo { get; set; } = "";
-    public bool Privada { get; set; } = true;
+    [Column("conteudo")] public string Conteudo { get; set; } = "";
+    [Column("privada")] public bool Privada { get; set; } = true;
     [Column("created_at")] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     [Column("updated_at")] public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }
@@ -683,16 +683,16 @@ public class ConversaNota
 [Table("conversao_destinos")]
 public class ConversaoDestino
 {
-    [Key] public Guid Id { get; set; } = Guid.NewGuid();
+    [Key][Column("id")] public Guid Id { get; set; } = Guid.NewGuid();
     [Column("empresa_id")] public Guid EmpresaId { get; set; }
     [Column("conversao_id")] public Guid ConversaoId { get; set; }
-    public string Plataforma { get; set; } = "";
+    [Column("plataforma")] public string Plataforma { get; set; } = "";
     [Column("metodo_envio")] public string MetodoEnvio { get; set; } = "csv";
     [Column("tipo_evento_plataforma")] public string? TipoEventoPlataforma { get; set; }
     [Column("status_envio")] public string StatusEnvio { get; set; } = "pendente";
-    public string? Identificadores { get; set; } // JSON
+    [Column("identificadores")] public string? Identificadores { get; set; } // JSON
     [Column("payload_preview")] public string? PayloadPreview { get; set; } // JSON
-    public string? Erro { get; set; }
+    [Column("erro")] public string? Erro { get; set; }
     [Column("exportacao_id")] public Guid? ExportacaoId { get; set; }
     [Column("enviado_em")] public DateTime? EnviadoEm { get; set; }
     [Column("created_at")] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
@@ -702,17 +702,17 @@ public class ConversaoDestino
 [Table("exportacoes_conversoes")]
 public class ExportacaoConversao
 {
-    [Key] public Guid Id { get; set; } = Guid.NewGuid();
+    [Key][Column("id")] public Guid Id { get; set; } = Guid.NewGuid();
     [Column("empresa_id")] public Guid EmpresaId { get; set; }
-    public string Plataforma { get; set; } = "";
+    [Column("plataforma")] public string Plataforma { get; set; } = "";
     [Column("metodo_envio")] public string MetodoEnvio { get; set; } = "csv";
-    public string Status { get; set; } = "pendente";
+    [Column("status")] public string Status { get; set; } = "pendente";
     [Column("arquivo_url")] public string? ArquivoUrl { get; set; }
     [Column("google_sheet_url")] public string? GoogleSheetUrl { get; set; }
     [Column("total_registros")] public int TotalRegistros { get; set; } = 0;
     [Column("total_sucesso")] public int TotalSucesso { get; set; } = 0;
     [Column("total_erro")] public int TotalErro { get; set; } = 0;
-    public string? Filtros { get; set; } // JSON
+    [Column("filtros")] public string? Filtros { get; set; } // JSON
     [Column("created_by")] public Guid? CreatedBy { get; set; }
     [Column("created_at")] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     [Column("updated_at")] public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
@@ -721,9 +721,9 @@ public class ExportacaoConversao
 [Table("configuracoes_conversao")]
 public class ConfiguracaoConversao
 {
-    [Key] public Guid Id { get; set; } = Guid.NewGuid();
+    [Key][Column("id")] public Guid Id { get; set; } = Guid.NewGuid();
     [Column("empresa_id")] public Guid EmpresaId { get; set; }
-    public string Plataforma { get; set; } = "";
+    [Column("plataforma")] public string Plataforma { get; set; } = "";
     [Column("metodo_padrao")] public string MetodoPadrao { get; set; } = "csv";
     [Column("google_customer_id")] public string? GoogleCustomerId { get; set; }
     [Column("google_conversion_action_id")] public string? GoogleConversionActionId { get; set; }
@@ -733,11 +733,11 @@ public class ConfiguracaoConversao
     [Column("tiktok_advertiser_id")] public string? TiktokAdvertiserId { get; set; }
     [Column("tiktok_event_source_id")] public string? TiktokEventSourceId { get; set; }
     [Column("token_status")] public string TokenStatus { get; set; } = "nao_configurado";
-    public bool Ativo { get; set; } = true;
-    public string Tipo { get; set; } = "pixel";
-    public string? Nome { get; set; }
-    public string? Configuracao { get; set; } // JSON livre (para saudações e outros tipos)
-    public string? Configuracoes { get; set; } // JSON
+    [Column("ativo")] public bool Ativo { get; set; } = true;
+    [Column("tipo")] public string Tipo { get; set; } = "pixel";
+    [Column("nome")] public string? Nome { get; set; }
+    [Column("configuracao")] public string? Configuracao { get; set; } // JSON livre (para saudações e outros tipos)
+    [Column("configuracoes")] public string? Configuracoes { get; set; } // JSON
     [Column("created_at")] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     [Column("updated_at")] public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }
@@ -745,14 +745,14 @@ public class ConfiguracaoConversao
 [Table("mensagens_programadas")]
 public class MensagemProgramada
 {
-    [Key] public Guid Id { get; set; } = Guid.NewGuid();
+    [Key][Column("id")] public Guid Id { get; set; } = Guid.NewGuid();
     [Column("empresa_id")] public Guid EmpresaId { get; set; }
     [Column("conversa_id")] public Guid ConversaId { get; set; }
-    public string Conteudo { get; set; } = "";
+    [Column("conteudo")] public string Conteudo { get; set; } = "";
     [Column("agendado_para")] public DateTime AgendadoPara { get; set; }
-    public string Status { get; set; } = "pendente"; // pendente | enviada | cancelada | erro
+    [Column("status")] public string Status { get; set; } = "pendente"; // pendente | enviada | cancelada | erro
     [Column("enviado_em")] public DateTime? EnviadoEm { get; set; }
-    public string? Erro { get; set; }
+    [Column("erro")] public string? Erro { get; set; }
     [Column("created_at")] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
 
@@ -760,22 +760,22 @@ public class MensagemProgramada
 [Table("agendamentos")]
 public class Agendamento
 {
-    [Key] public Guid Id { get; set; } = Guid.NewGuid();
+    [Key][Column("id")] public Guid Id { get; set; } = Guid.NewGuid();
     [Column("empresa_id")] public Guid EmpresaId { get; set; }
     [Column("lead_id")] public Guid LeadId { get; set; }
     [Column("conversa_id")] public Guid? ConversaId { get; set; }
     [Column("usuario_id")] public Guid? UsuarioId { get; set; }
-    public string Titulo { get; set; } = "";
-    public string? Descricao { get; set; }
-    public string Tipo { get; set; } = "reuniao"; // reuniao | ligacao | visita | tarefa | follow_up
-    public string Status { get; set; } = "agendado"; // agendado | confirmado | concluido | cancelado | remarcado
+    [Column("titulo")] public string Titulo { get; set; } = "";
+    [Column("descricao")] public string? Descricao { get; set; }
+    [Column("tipo")] public string Tipo { get; set; } = "reuniao"; // reuniao | ligacao | visita | tarefa | follow_up
+    [Column("status")] public string Status { get; set; } = "agendado"; // agendado | confirmado | concluido | cancelado | remarcado
     [Column("data_inicio")] public DateTime DataInicio { get; set; }
     [Column("data_fim")] public DateTime? DataFim { get; set; }
     [Column("dia_todo")] public bool DiaTodo { get; set; } = false;
-    public string? Local { get; set; }
+    [Column("local")] public string? Local { get; set; }
     [Column("link_reuniao")] public string? LinkReuniao { get; set; }
     [Column("lembrete_minutos")] public int? LembreteMinutos { get; set; }
-    public string? Notas { get; set; }
+    [Column("notas")] public string? Notas { get; set; }
     [Column("created_by")] public Guid? CreatedBy { get; set; }
     [Column("created_at")] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     [Column("updated_at")] public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
@@ -785,17 +785,17 @@ public class Agendamento
 [Table("chatbot_fluxos")]
 public class ChatbotFluxo
 {
-    [Key] public Guid Id { get; set; } = Guid.NewGuid();
+    [Key][Column("id")] public Guid Id { get; set; } = Guid.NewGuid();
     [Column("empresa_id")] public Guid EmpresaId { get; set; }
     [Column("canal_id")] public Guid? CanalId { get; set; }
-    public string Nome { get; set; } = "";
-    public string Tipo { get; set; } = "saudacao"; // saudacao | menu | regras | ia
-    public string? Configuracao { get; set; } // JSON
+    [Column("nome")] public string Nome { get; set; } = "";
+    [Column("tipo")] public string Tipo { get; set; } = "saudacao"; // saudacao | menu | regras | ia
+    [Column("configuracao")] public string? Configuracao { get; set; } // JSON
     [Column("horario_inicio")] public string? HorarioInicio { get; set; }
     [Column("horario_fim")] public string? HorarioFim { get; set; }
     [Column("dias_semana")] public string? DiasSemana { get; set; }
-    public bool Ativo { get; set; } = true;
-    public int Ordem { get; set; } = 0;
+    [Column("ativo")] public bool Ativo { get; set; } = true;
+    [Column("ordem")] public int Ordem { get; set; } = 0;
     [Column("created_at")] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     [Column("updated_at")] public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }
@@ -804,18 +804,18 @@ public class ChatbotFluxo
 [Table("afiliados")]
 public class Afiliado
 {
-    [Key] public Guid Id { get; set; } = Guid.NewGuid();
+    [Key][Column("id")] public Guid Id { get; set; } = Guid.NewGuid();
     [Column("empresa_id")] public Guid EmpresaId { get; set; }
     [Column("usuario_id")] public Guid? UsuarioId { get; set; }
-    public string Nome { get; set; } = "";
-    public string? Email { get; set; }
-    public string? Telefone { get; set; }
+    [Column("nome")] public string Nome { get; set; } = "";
+    [Column("email")] public string? Email { get; set; }
+    [Column("telefone")] public string? Telefone { get; set; }
     [Column("codigo_afiliado")] public string CodigoAfiliado { get; set; } = "";
     [Column("percentual_comissao")] public decimal PercentualComissao { get; set; } = 10;
     [Column("total_indicacoes")] public int TotalIndicacoes { get; set; } = 0;
     [Column("total_convertidas")] public int TotalConvertidas { get; set; } = 0;
     [Column("total_comissao")] public decimal TotalComissao { get; set; } = 0;
-    public string Status { get; set; } = "ativo";
+    [Column("status")] public string Status { get; set; } = "ativo";
     [Column("created_at")] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     [Column("updated_at")] public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }
@@ -823,19 +823,19 @@ public class Afiliado
 [Table("indicacoes")]
 public class Indicacao
 {
-    [Key] public Guid Id { get; set; } = Guid.NewGuid();
+    [Key][Column("id")] public Guid Id { get; set; } = Guid.NewGuid();
     [Column("empresa_id")] public Guid EmpresaId { get; set; }
     [Column("afiliado_id")] public Guid AfiliadoId { get; set; }
     [Column("lead_id")] public Guid? LeadId { get; set; }
     [Column("nome_indicado")] public string NomeIndicado { get; set; } = "";
     [Column("email_indicado")] public string? EmailIndicado { get; set; }
     [Column("telefone_indicado")] public string? TelefoneIndicado { get; set; }
-    public string Status { get; set; } = "pendente";
+    [Column("status")] public string Status { get; set; } = "pendente";
     [Column("valor_venda")] public decimal? ValorVenda { get; set; }
     [Column("valor_comissao")] public decimal? ValorComissao { get; set; }
     [Column("comissao_paga")] public bool ComissaoPaga { get; set; } = false;
     [Column("paga_em")] public DateTime? PagaEm { get; set; }
-    public string? Observacoes { get; set; }
+    [Column("observacoes")] public string? Observacoes { get; set; }
     [Column("created_at")] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     [Column("updated_at")] public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }
@@ -844,17 +844,17 @@ public class Indicacao
 [Table("integracoes_externas")]
 public class IntegracaoExterna
 {
-    [Key] public Guid Id { get; set; } = Guid.NewGuid();
+    [Key][Column("id")] public Guid Id { get; set; } = Guid.NewGuid();
     [Column("empresa_id")] public Guid EmpresaId { get; set; }
-    public string Plataforma { get; set; } = "";
-    public string Nome { get; set; } = "";
+    [Column("plataforma")] public string Plataforma { get; set; } = "";
+    [Column("nome")] public string Nome { get; set; } = "";
     [Column("webhook_url")] public string? WebhookUrl { get; set; }
     [Column("api_key")] public string? ApiKey { get; set; }
-    public string? Configuracao { get; set; }
-    public string Status { get; set; } = "inativo";
+    [Column("configuracao")] public string? Configuracao { get; set; }
+    [Column("status")] public string Status { get; set; } = "inativo";
     [Column("ultimo_disparo")] public DateTime? UltimoDisparo { get; set; }
     [Column("total_disparos")] public int TotalDisparos { get; set; } = 0;
-    public bool Ativo { get; set; } = false;
+    [Column("ativo")] public bool Ativo { get; set; } = false;
     [Column("created_at")] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     [Column("updated_at")] public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }
@@ -863,16 +863,16 @@ public class IntegracaoExterna
 [Table("base_conhecimento")]
 public class BaseConhecimento
 {
-    [Key] public Guid Id { get; set; } = Guid.NewGuid();
+    [Key][Column("id")] public Guid Id { get; set; } = Guid.NewGuid();
     [Column("empresa_id")] public Guid EmpresaId { get; set; }
     [Column("autor_id")] public Guid? AutorId { get; set; }
-    public string Titulo { get; set; } = "";
-    public string? Conteudo { get; set; }
-    public string Categoria { get; set; } = "geral";
-    public string? Tags { get; set; } // comma-separated, ex: "faq,produto,atendimento"
-    public bool Publico { get; set; } = false;
-    public bool Ativo { get; set; } = true;
-    public int Visualizacoes { get; set; } = 0;
+    [Column("titulo")] public string Titulo { get; set; } = "";
+    [Column("conteudo")] public string? Conteudo { get; set; }
+    [Column("categoria")] public string Categoria { get; set; } = "geral";
+    [Column("tags")] public string? Tags { get; set; } // comma-separated, ex: "faq,produto,atendimento"
+    [Column("publico")] public bool Publico { get; set; } = false;
+    [Column("ativo")] public bool Ativo { get; set; } = true;
+    [Column("visualizacoes")] public int Visualizacoes { get; set; } = 0;
     [Column("created_at")] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     [Column("updated_at")] public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }

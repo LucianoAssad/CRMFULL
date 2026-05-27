@@ -95,4 +95,4 @@ public class ConfiguracoesConversaoExController : CrudController<ConfiguracaoCon
 {
     public ConfiguracoesConversaoExController(AppDbContext db) : base(db) { }
 }
-// trigger deploy Tue May 26 21:22:49     2026
+// trigger deploy v4 - column mapping fix
