@@ -127,15 +127,15 @@ public class Lead
     [Column("nome_fantasia")] public string? NomeFantasia { get; set; }
     public string? Cnpj { get; set; }
     [Column("inscricao_estadual")] public string? InscricaoEstadual { get; set; }
-    public string? Cep { get; set; }
-    public string? Rua { get; set; }
-    public string? Numero { get; set; }
-    public string? Bairro { get; set; }
-    public string? Cidade { get; set; }
-    public string? Estado { get; set; }
+    [Column("cep")] public string? Cep { get; set; }
+    [Column("rua")] public string? Rua { get; set; }
+    [Column("numero")] public string? Numero { get; set; }
+    [Column("bairro")] public string? Bairro { get; set; }
+    [Column("cidade")] public string? Cidade { get; set; }
+    [Column("estado")] public string? Estado { get; set; }
     [Column("complemento")] public string? Complemento { get; set; }
     [Column("telefone2")] public string? Telefone2 { get; set; }
-    public string? Genero { get; set; }
+    [Column("genero")] public string? Genero { get; set; }
     [Column("created_at")] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     [Column("updated_at")] public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
@@ -151,7 +151,7 @@ public class Conversa
     [Column("lead_id")] public Guid LeadId { get; set; }
     [Column("canal_id")] public Guid? CanalId { get; set; }
     public string Status { get; set; } = "aberta";
-    public string? Prioridade { get; set; } = "normal";
+    [Column("prioridade")] public string? Prioridade { get; set; } = "normal";
     [Column("responsavel_id")] public Guid? ResponsavelId { get; set; }
     [Column("ultima_mensagem")] public string? UltimaMensagem { get; set; }
     [Column("ultima_mensagem_em")] public DateTime? UltimaMensagemEm { get; set; } = DateTime.UtcNow;
@@ -318,16 +318,16 @@ public class Campanha
     [Column("empresa_id")] public Guid EmpresaId { get; set; }
     [Column("criada_por_conta_id")] public Guid? CriadaPorContaId { get; set; }
     [Column("conta_gerente_id")] public Guid? ContaGerenteId { get; set; }
-    public string Escopo { get; set; } = "conta";
+    [Column("escopo")] public string Escopo { get; set; } = "conta";
     public string Nome { get; set; } = "";
     public string? Descricao { get; set; }
     public string Canal { get; set; } = "whatsapp_oficial";
     public string Status { get; set; } = "rascunho";
     [Column("template_id")] public Guid? TemplateId { get; set; }
-    public string? Assunto { get; set; }
+    [Column("assunto")] public string? Assunto { get; set; }
     public string? Mensagem { get; set; }
-    public string Variaveis { get; set; } = "[]";
-    public string Filtros { get; set; } = "{}";
+    [Column("variaveis")] public string Variaveis { get; set; } = "[]";
+    [Column("filtros")] public string Filtros { get; set; } = "{}";
     [Column("agendada_para")] public DateTime? AgendadaPara { get; set; }
     [Column("iniciada_em")] public DateTime? IniciadaEm { get; set; }
     [Column("finalizada_em")] public DateTime? FinalizadaEm { get; set; }

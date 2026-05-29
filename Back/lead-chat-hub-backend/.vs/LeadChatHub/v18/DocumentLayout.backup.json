@@ -32,8 +32,21 @@
         },
         {
           "DockedWidth": 2161,
-          "SelectedChildIndex": 3,
+          "SelectedChildIndex": 0,
           "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "LeadChatHub.API.csproj",
+              "DocumentMoniker": "C:\\Users\\lucia\\OneDrive\\\u00C1rea de Trabalho\\Projetos\\CRM\\Back\\lead-chat-hub-backend\\LeadChatHub.API\\LeadChatHub.API.csproj",
+              "RelativeDocumentMoniker": "LeadChatHub.API\\LeadChatHub.API.csproj",
+              "ToolTip": "C:\\Users\\lucia\\OneDrive\\\u00C1rea de Trabalho\\Projetos\\CRM\\Back\\lead-chat-hub-backend\\LeadChatHub.API\\LeadChatHub.API.csproj",
+              "RelativeToolTip": "LeadChatHub.API\\LeadChatHub.API.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABoAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-05-15T02:09:48.458Z",
+              "EditorCaption": ""
+            },
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{d78612c7-9962-4b83-95d9-268046dad23a}"
@@ -45,19 +58,6 @@
             {
               "$type": "Bookmark",
               "Name": "ST:1:0:{d212f56b-c48a-434c-a121-1c5d80b59b9f}"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "LeadChatHub.API",
-              "DocumentMoniker": "C:\\Users\\lucia\\OneDrive\\\u00C1rea de Trabalho\\Projetos\\CRM\\Back\\lead-chat-hub-backend\\LeadChatHub.API\\LeadChatHub.API.csproj",
-              "RelativeDocumentMoniker": "LeadChatHub.API\\LeadChatHub.API.csproj",
-              "ToolTip": "C:\\Users\\lucia\\OneDrive\\\u00C1rea de Trabalho\\Projetos\\CRM\\Back\\lead-chat-hub-backend\\LeadChatHub.API\\LeadChatHub.API.csproj",
-              "RelativeToolTip": "LeadChatHub.API\\LeadChatHub.API.csproj",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABoAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2026-05-15T02:09:48.458Z",
-              "EditorCaption": ""
             }
           ]
         }

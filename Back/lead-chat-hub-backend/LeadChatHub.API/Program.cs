@@ -165,7 +165,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapHub<ChatHub>("/hubs/chat");
-app.MapGet("/health", () => Results.Ok(new { status = "ok", version = "v4-column-fix" }));
+app.MapGet("/health", () => Results.Ok(new { status = "ok", version = "v5-column-fix-complete" }));
 
 // Auto-migrate on startup (optional, can be disabled in production)
 using (var scope = app.Services.CreateScope())
@@ -237,7 +237,7 @@ using (var scope = app.Services.CreateScope())
                 ALTER TABLE campanhas ADD COLUMN IF NOT EXISTS escopo varchar(50) NOT NULL DEFAULT 'conta';
                 ALTER TABLE campanhas ADD COLUMN IF NOT EXISTS assunto varchar(300) NULL;
                 ALTER TABLE campanhas ADD COLUMN IF NOT EXISTS variaveis text NOT NULL DEFAULT '[]';
-                ALTER TABLE campanhas ADD COLUMN IF NOT EXISTS filtros text NOT NULL DEFAULT '{}';
+                ALTER TABLE campanhas ADD COLUMN IF NOT EXISTS filtros text NOT NULL DEFAULT '{{}}';
                 ALTER TABLE campanhas ADD COLUMN IF NOT EXISTS agendada_para timestamptz NULL;
                 ALTER TABLE campanhas ADD COLUMN IF NOT EXISTS iniciada_em timestamptz NULL;
                 ALTER TABLE campanhas ADD COLUMN IF NOT EXISTS finalizada_em timestamptz NULL;
