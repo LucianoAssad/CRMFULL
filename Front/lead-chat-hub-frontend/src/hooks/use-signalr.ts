@@ -1,8 +1,9 @@
 import { useEffect, useRef, useCallback } from "react";
 import * as signalR from "@microsoft/signalr";
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
-const HUB_URL = `${API_BASE}/hubs/chat`;
+// Use window.location.origin so SignalR connects through nginx (/hubs/ is proxied)
+// This avoids the /api suffix issue with VITE_API_URL
+const HUB_URL = `${window.location.origin}/hubs/chat`;
 
 let globalConnection: signalR.HubConnection | null = null;
 
