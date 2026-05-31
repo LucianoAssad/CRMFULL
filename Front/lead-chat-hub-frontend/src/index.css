@@ -4,25 +4,25 @@
 
 @layer base {
   :root {
-    /* WhatsApp-inspired CRM palette */
-    --background: 200 18% 96%;
-    --foreground: 200 15% 15%;
+    /* WhatsApp-inspired CRM palette — warm beige tone */
+    --background: 32 28% 95%;
+    --foreground: 25 20% 18%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 200 15% 15%;
+    --card: 32 18% 98%;
+    --card-foreground: 25 20% 18%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 200 15% 15%;
+    --popover: 32 18% 98%;
+    --popover-foreground: 25 20% 18%;
 
     --primary: 158 64% 32%;
     --primary-foreground: 0 0% 100%;
     --primary-glow: 158 70% 42%;
 
-    --secondary: 200 20% 92%;
-    --secondary-foreground: 200 15% 20%;
+    --secondary: 32 18% 91%;
+    --secondary-foreground: 25 18% 22%;
 
-    --muted: 200 15% 94%;
-    --muted-foreground: 200 10% 45%;
+    --muted: 32 14% 93%;
+    --muted-foreground: 25 10% 46%;
 
     --accent: 158 50% 92%;
     --accent-foreground: 158 64% 22%;
@@ -34,16 +34,16 @@
     --warning: 38 92% 50%;
     --info: 210 90% 55%;
 
-    --border: 200 15% 88%;
-    --input: 200 15% 88%;
+    --border: 32 14% 87%;
+    --input: 32 14% 87%;
     --ring: 158 64% 32%;
 
     --radius: 0.75rem;
 
     /* Chat-specific */
-    --chat-bg: 60 25% 95%;
+    --chat-bg: 36 22% 93%;
     --chat-bubble-out: 158 55% 88%;
-    --chat-bubble-in: 0 0% 100%;
+    --chat-bubble-in: 32 18% 99%;
     --sidebar-header: 158 25% 22%;
 
     --gradient-primary: linear-gradient(135deg, hsl(158 64% 32%), hsl(158 70% 42%));
