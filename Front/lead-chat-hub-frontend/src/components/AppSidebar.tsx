@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
-  LayoutDashboard, Inbox, Building2, Users, Plug, Package, GitBranch, Target, FileText, Settings, ShoppingCart, Megaphone, Upload, CalendarDays, Bot, UsersRound, HandCoins, Cable, BookOpen, GraduationCap,
+  LayoutDashboard, Inbox, Building2, Users, Plug, Package, GitBranch, Target, FileText, Settings, ShoppingCart, Megaphone, Upload, CalendarDays, Bot, UsersRound, HandCoins, Cable, BookOpen, GraduationCap, Sun, Moon,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -50,6 +50,17 @@ const accountItems: Item[] = [
 ];
 
 
+function useTheme() {
+  const [dark, setDark] = useState(() => document.documentElement.classList.contains("dark"));
+  const toggle = () => {
+    const next = !dark;
+    document.documentElement.classList.toggle("dark", next);
+    localStorage.setItem("theme", next ? "dark" : "light");
+    setDark(next);
+  };
+  return { dark, toggle };
+}
+
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
@@ -57,6 +68,7 @@ export function AppSidebar() {
   const { activeConta, modoSistema } = useActiveAccount();
   const [usageConversas, setUsageConversas] = useState<number | null>(null);
   const [usageCanais, setUsageCanais] = useState<number | null>(null);
+  const { dark, toggle } = useTheme();
 
   // Re-render quando o role efetivo mudar (RoleSync dispara este evento)
   const [, setRoleTick] = useState(0);
@@ -119,9 +131,19 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      {!collapsed && activeConta && (usageConversas !== null || usageCanais !== null) && (
-        <SidebarFooter className="border-t px-3 py-2">
-          <div className="space-y-1 text-[11px] text-muted-foreground">
+      <SidebarFooter className="border-t px-3 py-2">
+        {/* Theme toggle */}
+        <button
+          onClick={toggle}
+          title={dark ? "Modo claro" : "Modo escuro"}
+          className="flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+        >
+          {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          {!collapsed && <span>{dark ? "Modo claro" : "Modo escuro"}</span>}
+        </button>
+
+        {!collapsed && activeConta && (usageConversas !== null || usageCanais !== null) && (
+          <div className="space-y-1 text-[11px] text-muted-foreground mt-1">
             <p className="font-medium text-foreground/70 uppercase tracking-wide text-[10px]">Uso atual</p>
             {usageConversas !== null && (
               <div className="flex items-center justify-between">
@@ -136,8 +158,8 @@ export function AppSidebar() {
               </div>
             )}
           </div>
-        </SidebarFooter>
-      )}
+        )}
+      </SidebarFooter>
     </Sidebar>
   );
 }
