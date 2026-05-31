@@ -518,7 +518,16 @@ export function ChatPanel({ conversa, mensagens, onSend, onSendTemplate, contasF
               </DropdownMenuItem>
             ))}
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => { setSchedText(text); setSchedOpen(true); }}>
+            <DropdownMenuItem onClick={() => {
+              // Pre-fill date = today, time = now + 5 min
+              const d = new Date();
+              d.setMinutes(d.getMinutes() + 5);
+              const pad = (n: number) => String(n).padStart(2, "0");
+              setSchedDate(`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`);
+              setSchedTime(`${pad(d.getHours())}:${pad(d.getMinutes())}`);
+              setSchedText(text);
+              setSchedOpen(true);
+            }}>
               <CalendarClock className="mr-2 h-4 w-4" /> Agendar mensagem
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => { setCatalogSearch(""); setCatalogOpen(true); }}>
