@@ -560,6 +560,15 @@ export const supabase = {
       };
     },
 
+    getUser: async () => {
+      const token = localStorage.getItem("access_token");
+      const session = token ? sessionFromToken(token) : null;
+      return {
+        data: { user: session?.user ?? null },
+        error: null,
+      };
+    },
+
     resetPasswordForEmail: async (email: string) => {
       // Not implemented in this version
       return { data: null, error: null };
