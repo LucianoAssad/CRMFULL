@@ -165,7 +165,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapHub<ChatHub>("/hubs/chat");
-app.MapGet("/health", () => Results.Ok(new { status = "ok", version = "v5-column-fix-complete" }));
+app.MapGet("/health", () => Results.Ok(new { status = "ok", version = "v6-leads-fix" }));
 
 // Auto-migrate on startup (optional, can be disabled in production)
 using (var scope = app.Services.CreateScope())

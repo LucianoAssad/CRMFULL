@@ -127,12 +127,12 @@ public class Lead
     [Column("nome_fantasia")] public string? NomeFantasia { get; set; }
     public string? Cnpj { get; set; }
     [Column("inscricao_estadual")] public string? InscricaoEstadual { get; set; }
-    [Column("cep")] public string? Cep { get; set; }
-    [Column("rua")] public string? Rua { get; set; }
-    [Column("numero")] public string? Numero { get; set; }
-    [Column("bairro")] public string? Bairro { get; set; }
-    [Column("cidade")] public string? Cidade { get; set; }
-    [Column("estado")] public string? Estado { get; set; }
+    public string? Cep { get; set; }
+    public string? Rua { get; set; }
+    public string? Numero { get; set; }
+    public string? Bairro { get; set; }
+    public string? Cidade { get; set; }
+    public string? Estado { get; set; }
     [Column("complemento")] public string? Complemento { get; set; }
     [Column("telefone2")] public string? Telefone2 { get; set; }
     [Column("genero")] public string? Genero { get; set; }
