@@ -74,6 +74,9 @@ builder.Services.AddScoped<AccountHierarchyService>();
 builder.Services.AddScoped<FileStorageService>();
 builder.Services.AddHttpClient();
 
+// === Background Workers ===
+builder.Services.AddHostedService<LeadChatHub.API.Workers.MensagemProgramadaWorker>();
+
 // === Controllers & SignalR ===
 builder.Services.AddControllers()
     .AddJsonOptions(opts =>
@@ -165,7 +168,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapHub<ChatHub>("/hubs/chat");
-app.MapGet("/health", () => Results.Ok(new { status = "ok", version = "v6-leads-fix" }));
+app.MapGet("/health", () => Results.Ok(new { status = "ok", version = "v7-worker" }));
 
 // Auto-migrate on startup (optional, can be disabled in production)
 using (var scope = app.Services.CreateScope())
