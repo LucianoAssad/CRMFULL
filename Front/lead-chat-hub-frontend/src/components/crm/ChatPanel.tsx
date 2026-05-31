@@ -284,7 +284,7 @@ export function ChatPanel({ conversa, mensagens, onSend, onSendTemplate, contasF
 
   const handleSchedSend = async () => {
     if (!schedText.trim() || !schedDate || !schedTime || !conversa) return;
-    const agendadoPara = `${schedDate}T${schedTime}:00`;
+    const agendadoPara = `${schedDate}T${schedTime}:00Z`;
     const { error } = await supabase.from("mensagens_programadas" as any).insert({
       empresa_id: conversa.empresa_id,
       conversa_id: conversa.id,
