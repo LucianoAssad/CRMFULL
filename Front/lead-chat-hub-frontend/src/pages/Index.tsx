@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { captureTrackingFromUrl } from "@/lib/tracking";
 import { ConversationList } from "@/components/crm/ConversationList";
@@ -7,6 +7,7 @@ import { LeadPanel } from "@/components/crm/LeadPanel";
 import { useActiveAccount } from "@/contexts/ActiveAccountContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { getActiveRole } from "@/lib/permissions";
+import { useSignalR } from "@/hooks/use-signalr";
 
 import type { Canal, Conversa, Lead, Mensagem } from "@/lib/crm-types";
 import { toast } from "sonner";
@@ -20,6 +21,11 @@ export default function Index() {
   const [selected, setSelected] = useState<Conversa | null>(null);
   const [mensagens, setMensagens] = useState<Mensagem[]>([]);
   const [lead, setLead] = useState<Lead | null>(null);
+
+  // SignalR real-time
+  const { joinEmpresa, on } = useSignalR();
+  const selectedRef = useRef<Conversa | null>(null);
+  selectedRef.current = selected;
 
   const loadCanais = async () => {
     // 1) canais próprios da empresa (empresa_id in scopedContaIds)
@@ -138,17 +144,36 @@ export default function Index() {
 
   useEffect(() => { captureTrackingFromUrl(); loadConversas(); loadCanais(); /* eslint-disable-next-line */ }, [activeContaId, scopedContaIds.join(",")]);
 
+  // SignalR: join empresa groups and listen for real-time events
   useEffect(() => {
-    const ch = supabase
-      .channel("crm")
-      .on("postgres_changes", { event: "*", schema: "public", table: "mensagens" }, () => {
-        if (selected) loadMensagens(selected.id);
-        loadConversas();
-      })
-      .on("postgres_changes", { event: "*", schema: "public", table: "conversas" }, () => loadConversas())
-      .subscribe();
-    return () => { supabase.removeChannel(ch); };
-  }, [selected]);
+    if (scopedContaIds.length === 0) return;
+    scopedContaIds.forEach((id) => joinEmpresa(id));
+
+    const offNewMsg = on("NewMessage", (msg: any) => {
+      const cur = selectedRef.current;
+      if (cur && (msg.conversaId === cur.id || msg.conversa_id === cur.id)) {
+        const nova: Mensagem = {
+          id: msg.id,
+          conversa_id: msg.conversaId ?? msg.conversa_id ?? cur.id,
+          direcao: msg.direcao ?? "inbound",
+          conteudo: msg.conteudo ?? "",
+          autor: msg.autor ?? null,
+          lida: msg.lida ?? false,
+          created_at: msg.createdAt ?? msg.created_at ?? new Date().toISOString(),
+        };
+        setMensagens((prev) => {
+          if (prev.some((m) => m.id === nova.id)) return prev;
+          return [...prev, nova];
+        });
+      }
+      loadConversas();
+    });
+
+    const offConvUpd = on("ConversaUpdated", () => loadConversas());
+
+    return () => { offNewMsg?.(); offConvUpd?.(); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scopedContaIds.join(","), on, joinEmpresa]);
 
   const loadMensagens = async (convId: string) => {
     const { data, error } = await supabase
