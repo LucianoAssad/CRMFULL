@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using LeadChatHub.API.Hubs;
 using LeadChatHub.Core.Entities;
 using LeadChatHub.Infrastructure.Data;
 
@@ -12,13 +14,16 @@ namespace LeadChatHub.API.Workers;
 public class MensagemProgramadaWorker : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly IHubContext<ChatHub> _hub;
     private readonly ILogger<MensagemProgramadaWorker> _logger;
     private static readonly TimeSpan _interval = TimeSpan.FromSeconds(60);
 
     public MensagemProgramadaWorker(IServiceScopeFactory scopeFactory,
+                                     IHubContext<ChatHub> hub,
                                      ILogger<MensagemProgramadaWorker> logger)
     {
         _scopeFactory = scopeFactory;
+        _hub = hub;
         _logger = logger;
     }
 
@@ -102,6 +107,25 @@ public class MensagemProgramadaWorker : BackgroundService
 
         // NOTE: When real channel integration is ready, call WhatsAppService here:
         // await whatsAppService.EnviarAsync(conversa.CanalId, lead.Telefone, mp.Conteudo);
+
+        // 3. Push real-time notification via SignalR (no page refresh needed)
+        await _hub.NotifyNewMessage(mp.EmpresaId, mp.ConversaId, new
+        {
+            id          = mensagem.Id,
+            conversaId  = mensagem.ConversaId,
+            direcao     = mensagem.Direcao,
+            conteudo    = mensagem.Conteudo,
+            tipo        = mensagem.Tipo,
+            createdAt   = mensagem.CreatedAt,
+        });
+
+        if (conversa != null)
+            await _hub.NotifyConversaUpdated(mp.EmpresaId, new
+            {
+                id                = conversa.Id,
+                ultimaMensagem    = conversa.UltimaMensagem,
+                ultimaMensagemEm  = conversa.UltimaMensagemEm,
+            });
 
         _logger.LogInformation("Mensagem programada {Id} despachada para conversa {Conv}.",
             mp.Id, mp.ConversaId);

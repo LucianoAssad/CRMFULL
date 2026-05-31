@@ -168,7 +168,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapHub<ChatHub>("/hubs/chat");
-app.MapGet("/health", () => Results.Ok(new { status = "ok", version = "v7-worker" }));
+app.MapGet("/health", () => Results.Ok(new { status = "ok", version = "v8-signalr-worker" }));
 
 // Auto-migrate on startup (optional, can be disabled in production)
 using (var scope = app.Services.CreateScope())
