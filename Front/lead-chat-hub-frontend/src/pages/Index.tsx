@@ -144,36 +144,34 @@ export default function Index() {
 
   useEffect(() => { captureTrackingFromUrl(); loadConversas(); loadCanais(); /* eslint-disable-next-line */ }, [activeContaId, scopedContaIds.join(",")]);
 
-  // SignalR: join empresa groups and listen for real-time events
+  // SignalR: join groups (best-effort, fallback to polling)
   useEffect(() => {
     if (scopedContaIds.length === 0) return;
     scopedContaIds.forEach((id) => joinEmpresa(id));
-
-    const offNewMsg = on("NewMessage", (msg: any) => {
+    const offConvUpd = on("ConversaUpdated", () => loadConversas());
+    const offNewMsg = on("NewMessage", () => {
       const cur = selectedRef.current;
-      if (cur && (msg.conversaId === cur.id || msg.conversa_id === cur.id)) {
-        const nova: Mensagem = {
-          id: msg.id,
-          conversa_id: msg.conversaId ?? msg.conversa_id ?? cur.id,
-          direcao: msg.direcao ?? "inbound",
-          conteudo: msg.conteudo ?? "",
-          autor: msg.autor ?? null,
-          lida: msg.lida ?? false,
-          created_at: msg.createdAt ?? msg.created_at ?? new Date().toISOString(),
-        };
-        setMensagens((prev) => {
-          if (prev.some((m) => m.id === nova.id)) return prev;
-          return [...prev, nova];
-        });
-      }
+      if (cur) loadMensagens(cur.id);
       loadConversas();
     });
-
-    const offConvUpd = on("ConversaUpdated", () => loadConversas());
-
     return () => { offNewMsg?.(); offConvUpd?.(); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scopedContaIds.join(","), on, joinEmpresa]);
+
+  // Polling fallback: refresh mensagens every 8s and conversas every 15s
+  useEffect(() => {
+    const convPoll = setInterval(() => loadConversas(), 15000);
+    return () => clearInterval(convPoll);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeContaId, scopedContaIds.join(",")]);
+
+  useEffect(() => {
+    if (!selectedRef.current) return;
+    const msgPoll = setInterval(() => {
+      if (selectedRef.current) loadMensagens(selectedRef.current.id);
+    }, 8000);
+    return () => clearInterval(msgPoll);
+  }, [selected?.id]); // eslint-disable-line
 
   const loadMensagens = async (convId: string) => {
     const { data, error } = await supabase
