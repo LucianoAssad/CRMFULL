@@ -609,7 +609,7 @@ export function ChatPanel({ conversa, mensagens, onSend, onSendTemplate, contasF
                   value={schedDate}
                   onChange={(e) => setSchedDate(e.target.value)}
                   min={new Date().toISOString().slice(0, 10)}
-                  className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="w-full rounded-md border bg-background text-foreground px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary [color-scheme:light] dark:[color-scheme:dark]"
                 />
               </div>
               <div className="space-y-1">
@@ -618,7 +618,7 @@ export function ChatPanel({ conversa, mensagens, onSend, onSendTemplate, contasF
                   type="time"
                   value={schedTime}
                   onChange={(e) => setSchedTime(e.target.value)}
-                  className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="w-full rounded-md border bg-background text-foreground px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary [color-scheme:light] dark:[color-scheme:dark]"
                 />
               </div>
             </div>
