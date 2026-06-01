@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { captureTrackingFromUrl } from "@/lib/tracking";
 import { ConversationList } from "@/components/crm/ConversationList";
@@ -26,6 +26,28 @@ export default function Index() {
   const { joinEmpresa, on } = useSignalR();
   const selectedRef = useRef<Conversa | null>(null);
   selectedRef.current = selected;
+
+  // Resizable LeadPanel
+  const [leadPanelWidth, setLeadPanelWidth] = useState(320);
+  const isDragging = useRef(false);
+  const onDragStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    isDragging.current = true;
+    const startX = e.clientX;
+    const startW = leadPanelWidth;
+    const onMove = (ev: MouseEvent) => {
+      if (!isDragging.current) return;
+      const delta = startX - ev.clientX;
+      setLeadPanelWidth(Math.max(240, Math.min(600, startW + delta)));
+    };
+    const onUp = () => {
+      isDragging.current = false;
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+    };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+  }, [leadPanelWidth]);
 
   const loadCanais = async () => {
     // 1) canais próprios da empresa (empresa_id in scopedContaIds)
@@ -376,19 +398,27 @@ export default function Index() {
           setConversas((list) => list.map((c) => (c.id === selected.id ? { ...c, ...patch } : c)));
         }}
       />
-      <LeadPanel
-        lead={lead}
-        conversa={selected}
-        lastInboundAt={mensagens.filter((m) => m.direcao === "inbound").slice(-1)[0]?.created_at ?? null}
-        onSave={saveLead}
-        onConvert={convertLead}
-        onConversaPatch={(patch) => {
-          if (!selected) return;
-          const updated = { ...selected, ...patch } as Conversa;
-          setSelected(updated);
-          setConversas((list) => list.map((c) => (c.id === selected.id ? { ...c, ...patch } : c)));
-        }}
+      {/* Drag handle to resize LeadPanel */}
+      <div
+        onMouseDown={onDragStart}
+        className="w-1 cursor-col-resize hover:bg-primary/40 active:bg-primary/60 transition-colors flex-shrink-0"
+        title="Arraste para redimensionar"
       />
+      <div style={{ width: leadPanelWidth, minWidth: leadPanelWidth, flexShrink: 0 }} className="overflow-hidden">
+        <LeadPanel
+          lead={lead}
+          conversa={selected}
+          lastInboundAt={mensagens.filter((m) => m.direcao === "inbound").slice(-1)[0]?.created_at ?? null}
+          onSave={saveLead}
+          onConvert={convertLead}
+          onConversaPatch={(patch) => {
+            if (!selected) return;
+            const updated = { ...selected, ...patch } as Conversa;
+            setSelected(updated);
+            setConversas((list) => list.map((c) => (c.id === selected.id ? { ...c, ...patch } : c)));
+          }}
+        />
+      </div>
       
     </div>
   );
