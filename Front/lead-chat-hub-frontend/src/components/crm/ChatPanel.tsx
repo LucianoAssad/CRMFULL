@@ -118,15 +118,17 @@ export function ChatPanel({ conversa, mensagens, onSend, onSendTemplate, contasF
   const [schedOpen, setSchedOpen] = useState(false);
   const [schedDate, setSchedDate] = useState("");
   const [schedTime, setSchedTime] = useState("");
+  const [schedDateTime, setSchedDateTime] = useState("");
 
-  // Auto-fill date/time when dialog opens
+  // Auto-fill datetime when dialog opens
   useEffect(() => {
     if (schedOpen) {
       const d = new Date();
       d.setMinutes(d.getMinutes() + 5);
+      // Format: YYYY-MM-DDTHH:mm (required by datetime-local input)
       const pad = (n: number) => String(n).padStart(2, "0");
-      setSchedDate(`${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`);
-      setSchedTime(`${pad(d.getHours())}:${pad(d.getMinutes())}`);
+      const dt = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      setSchedDateTime(dt);
     }
   }, [schedOpen]);
   const [schedText, setSchedText] = useState("");
@@ -294,8 +296,8 @@ export function ChatPanel({ conversa, mensagens, onSend, onSendTemplate, contasF
   };
 
   const handleSchedSend = async () => {
-    if (!schedText.trim() || !schedDate || !schedTime || !conversa) return;
-    const agendadoPara = `${schedDate}T${schedTime}:00Z`;
+    if (!schedText.trim() || !schedDateTime || !conversa) return;
+    const agendadoPara = new Date(schedDateTime).toISOString();
     const { error } = await supabase.from("mensagens_programadas" as any).insert({
       empresa_id: conversa.empresa_id,
       conversa_id: conversa.id,
@@ -601,31 +603,20 @@ export function ChatPanel({ conversa, mensagens, onSend, onSendTemplate, contasF
                 placeholder="Digite a mensagem a ser enviada..."
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <Label>Data</Label>
-                <input
-                  type="date"
-                  value={schedDate}
-                  onChange={(e) => setSchedDate(e.target.value)}
-                  min={new Date().toISOString().slice(0, 10)}
-                  className="w-full rounded-md border bg-background text-foreground px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary [color-scheme:light] dark:[color-scheme:dark]"
-                />
-              </div>
-              <div className="space-y-1">
-                <Label>Hora</Label>
-                <input
-                  type="time"
-                  value={schedTime}
-                  onChange={(e) => setSchedTime(e.target.value)}
-                  className="w-full rounded-md border bg-background text-foreground px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary [color-scheme:light] dark:[color-scheme:dark]"
-                />
-              </div>
+            <div className="space-y-1">
+              <Label>Data e Hora</Label>
+              <input
+                type="datetime-local"
+                value={schedDateTime}
+                onChange={(e) => setSchedDateTime(e.target.value)}
+                min={new Date().toISOString().slice(0, 16)}
+                className="w-full rounded-md border bg-background text-foreground px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary [color-scheme:light] dark:[color-scheme:dark]"
+              />
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setSchedOpen(false)}>Cancelar</Button>
-            <Button onClick={handleSchedSend} disabled={!schedText.trim() || !schedDate || !schedTime}>
+            <Button onClick={handleSchedSend} disabled={!schedText.trim() || !schedDateTime}>
               <CalendarClock className="mr-2 h-4 w-4" /> Agendar
             </Button>
           </DialogFooter>
