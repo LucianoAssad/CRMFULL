@@ -27,27 +27,40 @@ export default function Index() {
   const selectedRef = useRef<Conversa | null>(null);
   selectedRef.current = selected;
 
-  // Resizable LeadPanel
+  // Resizable panels
   const [leadPanelWidth, setLeadPanelWidth] = useState(320);
-  const isDragging = useRef(false);
-  const onDragStart = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    isDragging.current = true;
-    const startX = e.clientX;
-    const startW = leadPanelWidth;
-    const onMove = (ev: MouseEvent) => {
-      if (!isDragging.current) return;
-      const delta = startX - ev.clientX;
-      setLeadPanelWidth(Math.max(240, Math.min(600, startW + delta)));
-    };
-    const onUp = () => {
-      isDragging.current = false;
-      window.removeEventListener("mousemove", onMove);
-      window.removeEventListener("mouseup", onUp);
-    };
-    window.addEventListener("mousemove", onMove);
-    window.addEventListener("mouseup", onUp);
-  }, [leadPanelWidth]);
+  const [convListWidth, setConvListWidth] = useState(320);
+
+  const makeDragHandler = useCallback(
+    (getWidth: () => number, setWidth: (w: number) => void, direction: "left" | "right") =>
+      (e: React.MouseEvent) => {
+        e.preventDefault();
+        const startX = e.clientX;
+        const startW = getWidth();
+        // Disable text selection while dragging
+        document.body.style.userSelect = "none";
+        document.body.style.cursor = "col-resize";
+
+        const onMove = (ev: MouseEvent) => {
+          const delta = direction === "right"
+            ? startX - ev.clientX   // right handle: drag left = wider
+            : ev.clientX - startX;  // left handle: drag right = wider
+          setWidth(Math.max(240, Math.min(600, startW + delta)));
+        };
+        const onUp = () => {
+          document.body.style.userSelect = "";
+          document.body.style.cursor = "";
+          window.removeEventListener("mousemove", onMove);
+          window.removeEventListener("mouseup", onUp);
+        };
+        window.addEventListener("mousemove", onMove);
+        window.addEventListener("mouseup", onUp);
+      },
+    []
+  );
+
+  const onDragRight = makeDragHandler(() => leadPanelWidth, setLeadPanelWidth, "right");
+  const onDragLeft  = makeDragHandler(() => convListWidth,  setConvListWidth,  "left");
 
   const loadCanais = async () => {
     // 1) canais próprios da empresa (empresa_id in scopedContaIds)
@@ -378,11 +391,20 @@ export default function Index() {
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background">
-      <ConversationList
-        conversas={conversas}
-        canais={canais}
-        selectedId={selected?.id ?? null}
-        onSelect={openConversa}
+      {/* Left panel — conversation list */}
+      <div style={{ width: convListWidth, minWidth: convListWidth, flexShrink: 0 }} className="overflow-hidden">
+        <ConversationList
+          conversas={conversas}
+          canais={canais}
+          selectedId={selected?.id ?? null}
+          onSelect={openConversa}
+        />
+      </div>
+      {/* Drag handle — left */}
+      <div
+        onMouseDown={onDragLeft}
+        className="w-1 cursor-col-resize hover:bg-primary/40 active:bg-primary/60 transition-colors flex-shrink-0"
+        title="Arraste para redimensionar"
       />
       <ChatPanel
         conversa={selected}
@@ -398,9 +420,9 @@ export default function Index() {
           setConversas((list) => list.map((c) => (c.id === selected.id ? { ...c, ...patch } : c)));
         }}
       />
-      {/* Drag handle to resize LeadPanel */}
+      {/* Drag handle — right */}
       <div
-        onMouseDown={onDragStart}
+        onMouseDown={onDragRight}
         className="w-1 cursor-col-resize hover:bg-primary/40 active:bg-primary/60 transition-colors flex-shrink-0"
         title="Arraste para redimensionar"
       />
