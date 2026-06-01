@@ -118,6 +118,17 @@ export function ChatPanel({ conversa, mensagens, onSend, onSendTemplate, contasF
   const [schedOpen, setSchedOpen] = useState(false);
   const [schedDate, setSchedDate] = useState("");
   const [schedTime, setSchedTime] = useState("");
+
+  // Auto-fill date/time when dialog opens
+  useEffect(() => {
+    if (schedOpen) {
+      const d = new Date();
+      d.setMinutes(d.getMinutes() + 5);
+      const pad = (n: number) => String(n).padStart(2, "0");
+      setSchedDate(`${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`);
+      setSchedTime(`${pad(d.getHours())}:${pad(d.getMinutes())}`);
+    }
+  }, [schedOpen]);
   const [schedText, setSchedText] = useState("");
 
   // PTT — gravação de áudio

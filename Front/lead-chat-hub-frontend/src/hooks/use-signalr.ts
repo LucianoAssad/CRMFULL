@@ -22,6 +22,8 @@ export function useSignalR() {
     const connection = new signalR.HubConnectionBuilder()
       .withUrl(HUB_URL, {
         accessTokenFactory: () => localStorage.getItem("access_token") || "",
+        // Force LongPolling — WebSocket through nginx double-proxy causes 1006 drops
+        transport: signalR.HttpTransportType.LongPolling,
       })
       .withAutomaticReconnect()
       .configureLogging(signalR.LogLevel.Warning)
