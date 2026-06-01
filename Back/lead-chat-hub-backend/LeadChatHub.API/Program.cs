@@ -95,11 +95,11 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
+        // SetIsOriginAllowed + AllowCredentials required for SignalR cross-origin
         policy.SetIsOriginAllowed(_ => true)
               .AllowAnyHeader()
-              .AllowAnyMethod();
-        // Note: AllowCredentials() removed — we use JWT Bearer tokens, not cookies.
-        // AllowCredentials() + wildcard origin is invalid per CORS spec.
+              .AllowAnyMethod()
+              .AllowCredentials();
     });
 });
 
@@ -134,20 +134,7 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
 
-// Manual CORS — garante headers em todas as respostas
-app.Use(async (context, next) =>
-{
-    context.Response.Headers["Access-Control-Allow-Origin"] = "*";
-    context.Response.Headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, PATCH, DELETE, OPTIONS";
-    context.Response.Headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization";
-    if (context.Request.Method == "OPTIONS")
-    {
-        context.Response.StatusCode = 204;
-        return;
-    }
-    await next();
-});
-
+// CORS — single middleware, no duplicate headers
 app.UseCors();
 
 // Serve uploaded files
@@ -168,7 +155,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapHub<ChatHub>("/hubs/chat");
-app.MapGet("/health", () => Results.Ok(new { status = "ok", version = "v8-signalr-worker" }));
+app.MapGet("/health", () => Results.Ok(new { status = "ok", version = "v9-cors-fix" }));
 
 // Auto-migrate on startup (optional, can be disabled in production)
 using (var scope = app.Services.CreateScope())
