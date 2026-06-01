@@ -131,7 +131,7 @@ export function ConversationList({ conversas, canais, selectedId, onSelect }: Pr
   }, [usuarios]);
 
   return (
-    <aside className="flex h-full w-full max-w-sm flex-col border-r bg-card">
+    <aside className="flex h-full w-full flex-col border-r bg-card">
       <div className="bg-[hsl(var(--sidebar-header))] px-4 py-3 text-primary-foreground">
         <div className="flex items-center gap-2">
           <MessageCircle className="h-5 w-5" />

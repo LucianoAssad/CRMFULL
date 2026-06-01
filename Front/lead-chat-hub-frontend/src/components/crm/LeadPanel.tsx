@@ -105,7 +105,7 @@ export function LeadPanel({ lead, conversa, lastInboundAt, onSave, onConversaPat
   }, [lead?.id]);
 
   if (!lead) {
-    return <aside className="hidden w-80 border-l bg-card lg:block" />;
+    return <aside className="hidden w-full border-l bg-card lg:block" />;
   }
 
   const initials = (form.nome || lead.nome).split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase();
@@ -161,7 +161,7 @@ export function LeadPanel({ lead, conversa, lastInboundAt, onSave, onConversaPat
   const empresaLabel = lead.nome_fantasia || lead.razao_social || null;
 
   return (
-    <aside className="hidden w-80 flex-col overflow-y-auto border-l bg-card lg:flex">
+    <aside className="hidden w-full flex-col overflow-y-auto border-l bg-card lg:flex">
       {/* Header */}
       <div className="flex flex-col items-center gap-3 border-b bg-gradient-to-b from-accent to-card px-4 py-5">
         <Avatar className="h-16 w-16 ring-4 ring-card">
