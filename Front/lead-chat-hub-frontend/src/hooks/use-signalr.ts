@@ -1,9 +1,8 @@
 import { useEffect, useRef, useCallback } from "react";
 import * as signalR from "@microsoft/signalr";
 
-// Use window.location.origin so SignalR connects through nginx (/hubs/ is proxied)
-// This avoids the /api suffix issue with VITE_API_URL
-const HUB_URL = `${window.location.origin}/hubs/chat`;
+// Connect directly to backend — bypass nginx to avoid 502/504 on LongPolling
+const HUB_URL = "https://daring-balance-production-fc0c.up.railway.app/hubs/chat";
 
 let globalConnection: signalR.HubConnection | null = null;
 
