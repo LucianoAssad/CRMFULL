@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useActiveAccount } from "@/contexts/ActiveAccountContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -35,6 +35,15 @@ type Form = {
   documento: string;
 };
 
+// Brazilian phone mask: (XX) XXXXX-XXXX or (XX) XXXX-XXXX
+function maskPhone(raw: string): string {
+  const digits = raw.replace(/\D/g, "").slice(0, 11);
+  if (digits.length <= 2) return digits.length ? `(${digits}` : "";
+  if (digits.length <= 6) return `(${digits.slice(0,2)}) ${digits.slice(2)}`;
+  if (digits.length <= 10) return `(${digits.slice(0,2)}) ${digits.slice(2,6)}-${digits.slice(6)}`;
+  return `(${digits.slice(0,2)}) ${digits.slice(2,7)}-${digits.slice(7)}`;
+}
+
 export default function ConfiguracoesConta() {
   const { activeConta, reload } = useActiveAccount();
   const [empresa, setEmpresa] = useState<Empresa | null>(null);
@@ -42,6 +51,8 @@ export default function ConfiguracoesConta() {
   const [form, setForm] = useState<Form>({ nome: "", telefone: "", email: "", site: "", documento: "" });
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const emailCheckTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isFilha = activeConta?.tipo_conta === "filha";
 
@@ -106,11 +117,47 @@ export default function ConfiguracoesConta() {
     });
   };
 
+  const checkEmailUnique = async (email: string) => {
+    if (!email.trim() || !empresa) { setEmailError(null); return; }
+    const { data } = await supabase
+      .from("empresas")
+      .select("id")
+      .eq("email", email.trim().toLowerCase())
+      .neq("id", empresa.id)
+      .maybeSingle();
+    setEmailError(data ? "Este e-mail já está cadastrado em outra empresa." : null);
+  };
+
+  const onEmailChange = (value: string) => {
+    setForm({ ...form, email: value });
+    setEmailError(null);
+    if (emailCheckTimer.current) clearTimeout(emailCheckTimer.current);
+    emailCheckTimer.current = setTimeout(() => checkEmailUnique(value), 600);
+  };
+
   const onSave = async () => {
     if (!empresa) return;
     if (!form.nome.trim()) {
       toast({ title: "Nome obrigatório", variant: "destructive" });
       return;
+    }
+    if (emailError) {
+      toast({ title: "E-mail inválido", description: emailError, variant: "destructive" });
+      return;
+    }
+    // Final email check before save
+    if (form.email.trim()) {
+      const { data } = await supabase
+        .from("empresas")
+        .select("id")
+        .eq("email", form.email.trim().toLowerCase())
+        .neq("id", empresa.id)
+        .maybeSingle();
+      if (data) {
+        setEmailError("Este e-mail já está cadastrado em outra empresa.");
+        toast({ title: "E-mail já cadastrado", description: "Use outro e-mail.", variant: "destructive" });
+        return;
+      }
     }
     setSaving(true);
     const { error } = await supabase
@@ -174,11 +221,25 @@ export default function ConfiguracoesConta() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="telefone">Telefone</Label>
-              <Input id="telefone" value={form.telefone} onChange={(e) => setForm({ ...form, telefone: e.target.value })} maxLength={30} />
+              <Input
+                id="telefone"
+                value={form.telefone}
+                onChange={(e) => setForm({ ...form, telefone: maskPhone(e.target.value) })}
+                placeholder="(11) 99999-9999"
+                maxLength={15}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} maxLength={150} />
+              <Input
+                id="email"
+                type="email"
+                value={form.email}
+                onChange={(e) => onEmailChange(e.target.value)}
+                maxLength={150}
+                className={emailError ? "border-destructive focus-visible:ring-destructive" : ""}
+              />
+              {emailError && <p className="text-xs text-destructive">{emailError}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="site">Site</Label>
