@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useActiveAccount } from "@/contexts/ActiveAccountContext";
 import { supabase } from "@/integrations/supabase/client";
-import { api } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -174,33 +173,28 @@ export default function PerfilComercialConta() {
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !empresaId) return;
+    if (!file) return;
     if (!file.type.startsWith("image/")) {
       toast({ title: "Arquivo inválido", description: "Selecione uma imagem (JPG, PNG, WEBP).", variant: "destructive" });
       return;
     }
-    if (file.size > 2 * 1024 * 1024) {
-      toast({ title: "Arquivo muito grande", description: "Máximo 2MB.", variant: "destructive" });
+    if (file.size > 500 * 1024) {
+      toast({ title: "Arquivo muito grande", description: "Máximo 500KB para logo.", variant: "destructive" });
       return;
     }
     setUploadingLogo(true);
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("empresaId", empresaId);
-      formData.append("entidadeTipo", "perfil_comercial");
-      const { data } = await api.post("/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+      // Convert to base64 — stored directly in DB, no external storage needed
+      const base64 = await new Promise<string>((res, rej) => {
+        const reader = new FileReader();
+        reader.onload = () => res(reader.result as string);
+        reader.onerror = rej;
+        reader.readAsDataURL(file);
       });
-      const url = data?.url || data?.Url;
-      if (url) {
-        set("logo_url", url);
-        toast({ title: "Logo enviada com sucesso!" });
-      } else {
-        throw new Error("URL não retornada");
-      }
-    } catch (err: any) {
-      toast({ title: "Erro ao enviar logo", description: err?.message || "Tente novamente.", variant: "destructive" });
+      set("logo_url", base64);
+      toast({ title: "Logo carregada! Clique em Salvar para confirmar." });
+    } catch {
+      toast({ title: "Erro ao carregar logo", variant: "destructive" });
     } finally {
       setUploadingLogo(false);
       if (logoInputRef.current) logoInputRef.current.value = "";
