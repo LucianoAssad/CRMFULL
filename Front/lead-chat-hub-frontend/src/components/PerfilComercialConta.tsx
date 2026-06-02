@@ -1,13 +1,14 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useActiveAccount } from "@/contexts/ActiveAccountContext";
 import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Upload, X } from "lucide-react";
 
 type Form = {
   nome_unidade: string;
@@ -65,6 +66,8 @@ export default function PerfilComercialConta() {
   const [form, setForm] = useState<Form>(EMPTY);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const logoInputRef = useRef<HTMLInputElement>(null);
   const [seeding, setSeeding] = useState(false);
 
   const empresaId = activeConta?.id;
@@ -168,6 +171,41 @@ export default function PerfilComercialConta() {
   }, [form]);
 
   const set = <K extends keyof Form>(k: K, v: Form[K]) => setForm((f) => ({ ...f, [k]: v }));
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !empresaId) return;
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Arquivo inválido", description: "Selecione uma imagem (JPG, PNG, WEBP).", variant: "destructive" });
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast({ title: "Arquivo muito grande", description: "Máximo 2MB.", variant: "destructive" });
+      return;
+    }
+    setUploadingLogo(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("empresaId", empresaId);
+      formData.append("entidadeTipo", "perfil_comercial");
+      const { data } = await api.post("/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      const url = data?.url || data?.Url;
+      if (url) {
+        set("logo_url", url);
+        toast({ title: "Logo enviada com sucesso!" });
+      } else {
+        throw new Error("URL não retornada");
+      }
+    } catch (err: any) {
+      toast({ title: "Erro ao enviar logo", description: err?.message || "Tente novamente.", variant: "destructive" });
+    } finally {
+      setUploadingLogo(false);
+      if (logoInputRef.current) logoInputRef.current.value = "";
+    }
+  };
 
   const onSave = async () => {
     if (!empresaId) return;
@@ -282,8 +320,32 @@ export default function PerfilComercialConta() {
                 {form.cor_primaria && <span className="h-9 w-9 rounded border" style={{ background: form.cor_primaria }} />}
               </div>
             </Field>
-            <Field label="URL da logo" hint="Upload de logo será implementado em etapa futura.">
-              <Input value={form.logo_url} onChange={(e) => set("logo_url", e.target.value)} placeholder="https://..." />
+            <Field label="Logo da empresa">
+              <div className="flex items-center gap-3">
+                {form.logo_url ? (
+                  <div className="relative">
+                    <img src={form.logo_url} alt="Logo" className="h-16 w-16 rounded-lg object-contain border bg-white p-1" />
+                    <button
+                      type="button"
+                      onClick={() => set("logo_url", "")}
+                      className="absolute -top-1 -right-1 rounded-full bg-destructive text-white h-4 w-4 flex items-center justify-center hover:bg-destructive/80"
+                    >
+                      <X className="h-2.5 w-2.5" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="h-16 w-16 rounded-lg border-2 border-dashed flex items-center justify-center bg-muted text-muted-foreground">
+                    <Upload className="h-5 w-5" />
+                  </div>
+                )}
+                <div className="space-y-1">
+                  <input ref={logoInputRef} type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
+                  <Button type="button" variant="outline" size="sm" disabled={uploadingLogo} onClick={() => logoInputRef.current?.click()}>
+                    {uploadingLogo ? "Enviando..." : form.logo_url ? "Trocar logo" : "Enviar logo"}
+                  </Button>
+                  <p className="text-xs text-muted-foreground">JPG, PNG ou WEBP — máx. 2MB</p>
+                </div>
+              </div>
             </Field>
           </div>
         </section>
