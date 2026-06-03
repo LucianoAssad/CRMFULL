@@ -34,6 +34,15 @@ type Form = {
   parcelamento_padrao: string;
 };
 
+// Phone mask: (XX) XXXXX-XXXX
+function maskPhone(raw: string): string {
+  const d = raw.replace(/\D/g, "").slice(0, 11);
+  if (d.length <= 2) return d.length ? `(${d}` : "";
+  if (d.length <= 6) return `(${d.slice(0,2)}) ${d.slice(2)}`;
+  if (d.length <= 10) return `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`;
+  return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`;
+}
+
 // CNPJ mask: XX.XXX.XXX/XXXX-XX
 function maskCnpj(raw: string): string {
   const d = raw.replace(/\D/g, "").slice(0, 14);
@@ -335,8 +344,22 @@ export default function PerfilComercialConta() {
         <section className="space-y-4">
           <h3 className="text-sm font-semibold">Contato</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Field label="WhatsApp"><Input value={form.whatsapp} onChange={(e) => set("whatsapp", e.target.value)} /></Field>
-            <Field label="Telefone"><Input value={form.telefone} onChange={(e) => set("telefone", e.target.value)} /></Field>
+            <Field label="WhatsApp">
+              <Input
+                value={form.whatsapp}
+                onChange={(e) => set("whatsapp", maskPhone(e.target.value))}
+                placeholder="(11) 99999-9999"
+                maxLength={15}
+              />
+            </Field>
+            <Field label="Telefone">
+              <Input
+                value={form.telefone}
+                onChange={(e) => set("telefone", maskPhone(e.target.value))}
+                placeholder="(11) 99999-9999"
+                maxLength={15}
+              />
+            </Field>
             <Field label="E-mail"><Input type="email" value={form.email} onChange={(e) => set("email", e.target.value)} /></Field>
             <Field label="Site"><Input value={form.site} onChange={(e) => set("site", e.target.value)} /></Field>
           </div>
