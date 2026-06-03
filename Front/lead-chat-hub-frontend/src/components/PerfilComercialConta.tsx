@@ -34,6 +34,31 @@ type Form = {
   parcelamento_padrao: string;
 };
 
+// CNPJ mask: XX.XXX.XXX/XXXX-XX
+function maskCnpj(raw: string): string {
+  const d = raw.replace(/\D/g, "").slice(0, 14);
+  if (d.length <= 2) return d;
+  if (d.length <= 5) return `${d.slice(0,2)}.${d.slice(2)}`;
+  if (d.length <= 8) return `${d.slice(0,2)}.${d.slice(2,5)}.${d.slice(5)}`;
+  if (d.length <= 12) return `${d.slice(0,2)}.${d.slice(2,5)}.${d.slice(5,8)}/${d.slice(8)}`;
+  return `${d.slice(0,2)}.${d.slice(2,5)}.${d.slice(5,8)}/${d.slice(8,12)}-${d.slice(12)}`;
+}
+
+// CNPJ validation algorithm
+function validateCnpj(cnpj: string): boolean {
+  const d = cnpj.replace(/\D/g, "");
+  if (d.length !== 14) return false;
+  if (/^(\d)\1{13}$/.test(d)) return false; // all same digit
+  const calc = (digits: string, weights: number[]) =>
+    weights.reduce((sum, w, i) => sum + Number(digits[i]) * w, 0);
+  const mod = (n: number) => { const r = n % 11; return r < 2 ? 0 : 11 - r; };
+  const w1 = [5,4,3,2,9,8,7,6,5,4,3,2];
+  const w2 = [6,5,4,3,2,9,8,7,6,5,4,3,2];
+  const d1 = mod(calc(d, w1));
+  const d2 = mod(calc(d, w2));
+  return Number(d[12]) === d1 && Number(d[13]) === d2;
+}
+
 const EMPTY: Form = {
   nome_unidade: "",
   nome_fantasia: "",
@@ -67,6 +92,7 @@ export default function PerfilComercialConta() {
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const logoInputRef = useRef<HTMLInputElement>(null);
+  const [cnpjError, setCnpjError] = useState<string | null>(null);
   const [seeding, setSeeding] = useState(false);
 
   const empresaId = activeConta?.id;
@@ -207,6 +233,12 @@ export default function PerfilComercialConta() {
       toast({ title: "Validade inválida", description: "Validade padrão deve ser maior que zero.", variant: "destructive" });
       return;
     }
+    // Validate CNPJ if filled
+    if (form.cnpj.trim() && !validateCnpj(form.cnpj)) {
+      setCnpjError("CNPJ inválido");
+      toast({ title: "CNPJ inválido", description: "Verifique o número digitado.", variant: "destructive" });
+      return;
+    }
     setSaving(true);
     const formas = form.formas_pagamento_padrao
       .split(",")
@@ -278,7 +310,25 @@ export default function PerfilComercialConta() {
             <Field label="Nome da unidade"><Input value={form.nome_unidade} onChange={(e) => set("nome_unidade", e.target.value)} /></Field>
             <Field label="Nome fantasia"><Input value={form.nome_fantasia} onChange={(e) => set("nome_fantasia", e.target.value)} /></Field>
             <Field label="Razão social"><Input value={form.razao_social} onChange={(e) => set("razao_social", e.target.value)} /></Field>
-            <Field label="CNPJ"><Input value={form.cnpj} onChange={(e) => set("cnpj", e.target.value)} /></Field>
+            <Field label="CNPJ">
+              <Input
+                value={form.cnpj}
+                onChange={(e) => {
+                  const masked = maskCnpj(e.target.value);
+                  set("cnpj", masked);
+                  const digits = masked.replace(/\D/g, "");
+                  if (digits.length === 14) {
+                    setCnpjError(validateCnpj(masked) ? null : "CNPJ inválido");
+                  } else {
+                    setCnpjError(null);
+                  }
+                }}
+                placeholder="00.000.000/0000-00"
+                maxLength={18}
+                className={cnpjError ? "border-destructive focus-visible:ring-destructive" : ""}
+              />
+              {cnpjError && <p className="text-xs text-destructive mt-1">{cnpjError}</p>}
+            </Field>
           </div>
         </section>
 
