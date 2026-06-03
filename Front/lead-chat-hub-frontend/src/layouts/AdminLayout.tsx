@@ -1,5 +1,6 @@
 import { Outlet, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { ActiveAccountProvider, useActiveAccount } from "@/contexts/ActiveAccountContext";
@@ -18,6 +19,22 @@ import { getRootAccount } from "@/lib/account-hierarchy";
 import { formatCodigoPublico } from "@/lib/codigo-publico";
 import { useIsSuperAdmin } from "@/lib/super-admin";
 
+function useLogoUrl(activeContaId: string | null) {
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  useEffect(() => {
+    if (!activeContaId) return;
+    supabase
+      .from("empresa_perfil_comercial" as any)
+      .select("logo_url")
+      .eq("empresa_id", activeContaId)
+      .maybeSingle()
+      .then(({ data }: any) => {
+        setLogoUrl((data as any)?.logo_url || (data as any)?.logoUrl || null);
+      });
+  }, [activeContaId]);
+  return logoUrl;
+}
+
 function HeaderInner() {
   const { signOut, user } = useAuth();
   const navigate = useNavigate();
@@ -25,6 +42,7 @@ function HeaderInner() {
   const [switcherOpen, setSwitcherOpen] = useState(false);
   const root = getRootAccount(activeContaId, contas);
   const { isSuperAdmin } = useIsSuperAdmin();
+  const logoUrl = useLogoUrl(activeContaId);
 
   const onLogout = async () => {
     await signOut();
@@ -40,7 +58,11 @@ function HeaderInner() {
   return (
     <header className="flex h-12 items-center gap-2 border-b bg-card px-3">
       <SidebarTrigger />
-      <span className="text-sm font-semibold whitespace-nowrap">Krescer SMKT</span>
+      {logoUrl ? (
+        <img src={logoUrl} alt="Logo" className="h-7 w-auto max-w-[80px] object-contain rounded" />
+      ) : (
+        <span className="text-sm font-semibold whitespace-nowrap">Krescer SMKT</span>
+      )}
       <span className="mx-1 text-muted-foreground/60">/</span>
       <div className="min-w-0 flex-1">
         <AccountSwitcher open={switcherOpen} onOpenChange={setSwitcherOpen} />
