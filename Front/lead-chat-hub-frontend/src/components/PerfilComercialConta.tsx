@@ -395,13 +395,8 @@ export default function PerfilComercialConta() {
         <section className="space-y-4">
           <h3 className="text-sm font-semibold">Endereço</h3>
           <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-            <div className="md:col-span-4"><Field label="Logradouro"><Input value={form.endereco_logradouro} onChange={(e) => set("endereco_logradouro", e.target.value)} /></Field></div>
-            <div className="md:col-span-1"><Field label="Número"><Input value={form.endereco_numero} onChange={(e) => set("endereco_numero", e.target.value)} /></Field></div>
-            <div className="md:col-span-1"><Field label="UF"><Input maxLength={2} value={form.endereco_uf} onChange={(e) => set("endereco_uf", e.target.value.toUpperCase())} /></Field></div>
-            <div className="md:col-span-2"><Field label="Complemento"><Input value={form.endereco_complemento} onChange={(e) => set("endereco_complemento", e.target.value)} /></Field></div>
-            <div className="md:col-span-2"><Field label="Bairro"><Input value={form.endereco_bairro} onChange={(e) => set("endereco_bairro", e.target.value)} /></Field></div>
-            <div className="md:col-span-1"><Field label="Cidade"><Input value={form.endereco_cidade} onChange={(e) => set("endereco_cidade", e.target.value)} /></Field></div>
-            <div className="md:col-span-1">
+            {/* CEP primeiro — autocompleta os demais */}
+            <div className="md:col-span-2">
               <Field label="CEP">
                 <Input
                   value={form.endereco_cep}
@@ -417,6 +412,12 @@ export default function PerfilComercialConta() {
                 {cepLoading && <p className="text-xs text-muted-foreground mt-1">Buscando CEP...</p>}
               </Field>
             </div>
+            <div className="md:col-span-3"><Field label="Logradouro"><Input value={form.endereco_logradouro} onChange={(e) => set("endereco_logradouro", e.target.value)} /></Field></div>
+            <div className="md:col-span-1"><Field label="Número"><Input value={form.endereco_numero} onChange={(e) => set("endereco_numero", e.target.value)} /></Field></div>
+            <div className="md:col-span-2"><Field label="Complemento"><Input value={form.endereco_complemento} onChange={(e) => set("endereco_complemento", e.target.value)} /></Field></div>
+            <div className="md:col-span-2"><Field label="Bairro"><Input value={form.endereco_bairro} onChange={(e) => set("endereco_bairro", e.target.value)} /></Field></div>
+            <div className="md:col-span-1"><Field label="Cidade"><Input value={form.endereco_cidade} onChange={(e) => set("endereco_cidade", e.target.value)} /></Field></div>
+            <div className="md:col-span-1"><Field label="UF"><Input maxLength={2} value={form.endereco_uf} onChange={(e) => set("endereco_uf", e.target.value.toUpperCase())} /></Field></div>
           </div>
         </section>
 
@@ -474,8 +475,29 @@ export default function PerfilComercialConta() {
               <Input value={form.parcelamento_padrao} onChange={(e) => set("parcelamento_padrao", e.target.value)} />
             </Field>
             <div className="md:col-span-2">
-              <Field label="Formas de pagamento padrão" hint="Separe por vírgula. Ex.: Pix, Cartão, Dinheiro">
-                <Input value={form.formas_pagamento_padrao} onChange={(e) => set("formas_pagamento_padrao", e.target.value)} />
+              <Field label="Formas de pagamento padrão">
+                <div className="flex flex-wrap gap-3 pt-1">
+                  {["Cartão de crédito", "Cartão de débito", "Pix", "Boleto", "Dinheiro", "Transferência"].map((forma) => {
+                    const current = form.formas_pagamento_padrao.split(",").map((s) => s.trim()).filter(Boolean);
+                    const checked = current.includes(forma);
+                    return (
+                      <label key={forma} className="flex items-center gap-1.5 text-sm cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() => {
+                            const next = checked
+                              ? current.filter((f) => f !== forma)
+                              : [...current, forma];
+                            set("formas_pagamento_padrao", next.join(", "));
+                          }}
+                          className="accent-primary"
+                        />
+                        {forma}
+                      </label>
+                    );
+                  })}
+                </div>
               </Field>
             </div>
             <div className="md:col-span-2">
