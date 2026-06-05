@@ -102,6 +102,33 @@ export default function PerfilComercialConta() {
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const [cnpjError, setCnpjError] = useState<string | null>(null);
+  const [cepLoading, setCepLoading] = useState(false);
+
+  const buscarCep = async (cep: string) => {
+    const raw = cep.replace(/\D/g, "");
+    if (raw.length !== 8) return;
+    setCepLoading(true);
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${raw}/json/`);
+      const data = await res.json();
+      if (!data.erro) {
+        setForm((f) => ({
+          ...f,
+          endereco_logradouro: data.logradouro ?? f.endereco_logradouro,
+          endereco_bairro: data.bairro ?? f.endereco_bairro,
+          endereco_cidade: data.localidade ?? f.endereco_cidade,
+          endereco_uf: data.uf ?? f.endereco_uf,
+        }));
+        toast({ title: "CEP encontrado!" });
+      } else {
+        toast({ title: "CEP não encontrado", variant: "destructive" });
+      }
+    } catch {
+      toast({ title: "Erro ao buscar CEP", variant: "destructive" });
+    } finally {
+      setCepLoading(false);
+    }
+  };
   const [seeding, setSeeding] = useState(false);
 
   const empresaId = activeConta?.id;
@@ -374,7 +401,22 @@ export default function PerfilComercialConta() {
             <div className="md:col-span-2"><Field label="Complemento"><Input value={form.endereco_complemento} onChange={(e) => set("endereco_complemento", e.target.value)} /></Field></div>
             <div className="md:col-span-2"><Field label="Bairro"><Input value={form.endereco_bairro} onChange={(e) => set("endereco_bairro", e.target.value)} /></Field></div>
             <div className="md:col-span-1"><Field label="Cidade"><Input value={form.endereco_cidade} onChange={(e) => set("endereco_cidade", e.target.value)} /></Field></div>
-            <div className="md:col-span-1"><Field label="CEP"><Input value={form.endereco_cep} onChange={(e) => set("endereco_cep", e.target.value)} /></Field></div>
+            <div className="md:col-span-1">
+              <Field label="CEP">
+                <Input
+                  value={form.endereco_cep}
+                  onChange={(e) => {
+                    const v = e.target.value.replace(/\D/g, "").slice(0, 8);
+                    set("endereco_cep", v);
+                    if (v.length === 8) buscarCep(v);
+                  }}
+                  placeholder="00000-000"
+                  maxLength={8}
+                  disabled={cepLoading}
+                />
+                {cepLoading && <p className="text-xs text-muted-foreground mt-1">Buscando CEP...</p>}
+              </Field>
+            </div>
           </div>
         </section>
 
