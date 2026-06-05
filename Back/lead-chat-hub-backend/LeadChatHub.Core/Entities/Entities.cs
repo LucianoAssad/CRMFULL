@@ -39,6 +39,7 @@ public class Usuario
     public string Role { get; set; } = "atendente";
     [Column("password_hash")] public string? PasswordHash { get; set; }
     public bool Ativo { get; set; } = true;
+    [Column("primeiro_acesso")] public bool PrimeiroAcesso { get; set; } = false;
     [Column("created_at")] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     [Column("updated_at")] public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 

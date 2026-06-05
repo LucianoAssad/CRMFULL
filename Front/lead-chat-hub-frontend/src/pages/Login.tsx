@@ -24,9 +24,18 @@ export default function Login() {
   async function routeAfterLogin() {
     const email = session?.user?.email;
     if (!email) return;
-    const { data: usuario } = await supabase.from("usuarios").select("id").eq("email", email).maybeSingle();
+    const { data: usuario } = await supabase
+      .from("usuarios")
+      .select("id, primeiro_acesso")
+      .eq("email", email)
+      .maybeSingle();
     if (!usuario?.id) {
       toast.error("Usuário autenticado, mas sem cadastro vinculado.");
+      return;
+    }
+    // Force password change on first access
+    if ((usuario as any)?.primeiro_acesso || (usuario as any)?.primeiroAcesso) {
+      navigate("/primeiro-acesso", { replace: true });
       return;
     }
     const acessiveis = await fetchAccessibleAccounts(usuario.id);

@@ -60,6 +60,9 @@ public class UsuariosController : CrudController<Usuario>
         var sendEmail = Request.Query["sendEmail"].ToString() == "true";
         if (sendEmail && !string.IsNullOrEmpty(entity.Email) && !string.IsNullOrEmpty(senhaPlain))
         {
+            // Mark as first access — user must change password on first login
+            entity.PrimeiroAcesso = true;
+            await Db.SaveChangesAsync();
             _ = _email.SendWelcomeEmailAsync(entity.Email, entity.Nome, senhaPlain);
         }
 

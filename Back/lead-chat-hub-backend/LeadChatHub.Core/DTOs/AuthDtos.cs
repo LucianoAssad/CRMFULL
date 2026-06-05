@@ -27,5 +27,5 @@ public record SignupResponse(
 
 public record UsuarioDto(
     Guid Id, Guid EmpresaId, string Nome, string Email, string? Telefone,
-    string Role, bool Ativo, DateTime CreatedAt
+    string Role, bool Ativo, DateTime CreatedAt, bool PrimeiroAcesso = false
 );

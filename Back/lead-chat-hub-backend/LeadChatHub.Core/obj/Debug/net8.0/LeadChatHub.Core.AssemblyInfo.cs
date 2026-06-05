@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("LeadChatHub.Core")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a2b03b60e5e0bb09e09ee40edd27f8f71141b129")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e29a457dda01bee42394db64ad157d5e2159f0db")]
 [assembly: System.Reflection.AssemblyProductAttribute("LeadChatHub.Core")]
 [assembly: System.Reflection.AssemblyTitleAttribute("LeadChatHub.Core")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

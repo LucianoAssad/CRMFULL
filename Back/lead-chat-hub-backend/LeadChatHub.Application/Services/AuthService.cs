@@ -171,6 +171,7 @@ public class AuthService
         if (user == null) return false;
         if (!BCrypt.Net.BCrypt.Verify(req.CurrentPassword, user.PasswordHash)) return false;
         user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(req.NewPassword);
+        user.PrimeiroAcesso = false; // clear first-access flag
         await _db.SaveChangesAsync();
         return true;
     }
@@ -226,6 +227,6 @@ public class AuthService
     }
 
     private static UsuarioDto MapUser(Usuario u) => new(
-        u.Id, u.EmpresaId, u.Nome, u.Email, u.Telefone, u.Role, u.Ativo, u.CreatedAt
+        u.Id, u.EmpresaId, u.Nome, u.Email, u.Telefone, u.Role, u.Ativo, u.CreatedAt, u.PrimeiroAcesso
     );
 }

@@ -158,7 +158,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapHub<ChatHub>("/hubs/chat");
-app.MapGet("/health", () => Results.Ok(new { status = "ok", version = "v10-email" }));
+app.MapGet("/health", () => Results.Ok(new { status = "ok", version = "v11-primeiro-acesso" }));
 
 // Auto-migrate on startup (optional, can be disabled in production)
 using (var scope = app.Services.CreateScope())
@@ -179,6 +179,9 @@ using (var scope = app.Services.CreateScope())
         using (var cmd = conn.CreateCommand())
         {
             cmd.CommandText = @"
+                -- usuarios: coluna primeiro_acesso para forçar troca de senha no primeiro login
+                ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS primeiro_acesso boolean NOT NULL DEFAULT false;
+
                 -- pipelines: coluna updated_at pode estar ausente em instâncias antigas
                 ALTER TABLE pipelines ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT NOW();
                 ALTER TABLE pipeline_etapas ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT NOW();

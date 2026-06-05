@@ -3,6 +3,22 @@
   "WorkspaceRootPath": "C:\\Users\\lucia\\OneDrive\\\u00C1rea de Trabalho\\Projetos\\CRM\\Back\\lead-chat-hub-backend\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{F2E47087-C004-4745-ACB3-7903E34F89A0}|LeadChatHub.Application\\LeadChatHub.Application.csproj|c:\\users\\lucia\\onedrive\\\u00E1rea de trabalho\\projetos\\crm\\back\\lead-chat-hub-backend\\leadchathub.application\\services\\emailservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F2E47087-C004-4745-ACB3-7903E34F89A0}|LeadChatHub.Application\\LeadChatHub.Application.csproj|solutionrelative:leadchathub.application\\services\\emailservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F2E47087-C004-4745-ACB3-7903E34F89A0}|LeadChatHub.Application\\LeadChatHub.Application.csproj|c:\\users\\lucia\\onedrive\\\u00E1rea de trabalho\\projetos\\crm\\back\\lead-chat-hub-backend\\leadchathub.application\\services\\authservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F2E47087-C004-4745-ACB3-7903E34F89A0}|LeadChatHub.Application\\LeadChatHub.Application.csproj|solutionrelative:leadchathub.application\\services\\authservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{63D5BD4A-012A-4884-9863-FC76A19ABB16}|LeadChatHub.API\\LeadChatHub.API.csproj|c:\\users\\lucia\\onedrive\\\u00E1rea de trabalho\\projetos\\crm\\back\\lead-chat-hub-backend\\leadchathub.api\\hubs\\chathub.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{63D5BD4A-012A-4884-9863-FC76A19ABB16}|LeadChatHub.API\\LeadChatHub.API.csproj|solutionrelative:leadchathub.api\\hubs\\chathub.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{63D5BD4A-012A-4884-9863-FC76A19ABB16}|LeadChatHub.API\\LeadChatHub.API.csproj|c:\\users\\lucia\\onedrive\\\u00E1rea de trabalho\\projetos\\crm\\back\\lead-chat-hub-backend\\leadchathub.api\\controllers\\hierarchycontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{63D5BD4A-012A-4884-9863-FC76A19ABB16}|LeadChatHub.API\\LeadChatHub.API.csproj|solutionrelative:leadchathub.api\\controllers\\hierarchycontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{63D5BD4A-012A-4884-9863-FC76A19ABB16}|LeadChatHub.API\\LeadChatHub.API.csproj|c:\\users\\lucia\\onedrive\\\u00E1rea de trabalho\\projetos\\crm\\back\\lead-chat-hub-backend\\leadchathub.api\\leadchathub.api.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
       "RelativeMoniker": "D:0:0:{63D5BD4A-012A-4884-9863-FC76A19ABB16}|LeadChatHub.API\\LeadChatHub.API.csproj|solutionrelative:leadchathub.api\\leadchathub.api.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
     }
@@ -37,6 +53,58 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
+              "Title": "EmailService.cs",
+              "DocumentMoniker": "C:\\Users\\lucia\\OneDrive\\\u00C1rea de Trabalho\\Projetos\\CRM\\Back\\lead-chat-hub-backend\\LeadChatHub.Application\\Services\\EmailService.cs",
+              "RelativeDocumentMoniker": "LeadChatHub.Application\\Services\\EmailService.cs",
+              "ToolTip": "C:\\Users\\lucia\\OneDrive\\\u00C1rea de Trabalho\\Projetos\\CRM\\Back\\lead-chat-hub-backend\\LeadChatHub.Application\\Services\\EmailService.cs",
+              "RelativeToolTip": "LeadChatHub.Application\\Services\\EmailService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-05T00:50:28.619Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "AuthService.cs",
+              "DocumentMoniker": "C:\\Users\\lucia\\OneDrive\\\u00C1rea de Trabalho\\Projetos\\CRM\\Back\\lead-chat-hub-backend\\LeadChatHub.Application\\Services\\AuthService.cs",
+              "RelativeDocumentMoniker": "LeadChatHub.Application\\Services\\AuthService.cs",
+              "ToolTip": "C:\\Users\\lucia\\OneDrive\\\u00C1rea de Trabalho\\Projetos\\CRM\\Back\\lead-chat-hub-backend\\LeadChatHub.Application\\Services\\AuthService.cs",
+              "RelativeToolTip": "LeadChatHub.Application\\Services\\AuthService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-05T00:50:27.557Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "ChatHub.cs",
+              "DocumentMoniker": "C:\\Users\\lucia\\OneDrive\\\u00C1rea de Trabalho\\Projetos\\CRM\\Back\\lead-chat-hub-backend\\LeadChatHub.API\\Hubs\\ChatHub.cs",
+              "RelativeDocumentMoniker": "LeadChatHub.API\\Hubs\\ChatHub.cs",
+              "ToolTip": "C:\\Users\\lucia\\OneDrive\\\u00C1rea de Trabalho\\Projetos\\CRM\\Back\\lead-chat-hub-backend\\LeadChatHub.API\\Hubs\\ChatHub.cs",
+              "RelativeToolTip": "LeadChatHub.API\\Hubs\\ChatHub.cs",
+              "ViewState": "AgIAACAAAAAAAAAAAAAgwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-05T00:50:20.454Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "HierarchyController.cs",
+              "DocumentMoniker": "C:\\Users\\lucia\\OneDrive\\\u00C1rea de Trabalho\\Projetos\\CRM\\Back\\lead-chat-hub-backend\\LeadChatHub.API\\Controllers\\HierarchyController.cs",
+              "RelativeDocumentMoniker": "LeadChatHub.API\\Controllers\\HierarchyController.cs",
+              "ToolTip": "C:\\Users\\lucia\\OneDrive\\\u00C1rea de Trabalho\\Projetos\\CRM\\Back\\lead-chat-hub-backend\\LeadChatHub.API\\Controllers\\HierarchyController.cs",
+              "RelativeToolTip": "LeadChatHub.API\\Controllers\\HierarchyController.cs",
+              "ViewState": "AgIAAA4AAAAAAAAAAAAAwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-05T00:50:14.858Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
               "Title": "LeadChatHub.API.csproj",
               "DocumentMoniker": "C:\\Users\\lucia\\OneDrive\\\u00C1rea de Trabalho\\Projetos\\CRM\\Back\\lead-chat-hub-backend\\LeadChatHub.API\\LeadChatHub.API.csproj",
               "RelativeDocumentMoniker": "LeadChatHub.API\\LeadChatHub.API.csproj",

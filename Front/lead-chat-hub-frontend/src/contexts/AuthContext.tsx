@@ -62,8 +62,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (data?.session) {
       setSession(data.session as AppSession);
+      // Check if first access — backend returns primeiroAcesso in usuario object
+      const usuario = (data as any)?.user ?? (data as any)?.usuario;
+      if (usuario?.primeiroAcesso || usuario?.primeiro_acesso) {
+        // Redirect handled by Login page via returned flag
+        return { error: null, primeiroAcesso: true };
+      }
     }
-    return { error: error?.message ?? null };
+    return { error: error?.message ?? null, primeiroAcesso: false };
   };
 
   const signOut = async () => {

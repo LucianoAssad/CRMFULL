@@ -42,6 +42,7 @@ import { PermissionRoute } from "./components/PermissionGate.tsx";
 import { LegacyRedirect } from "./components/LegacyRedirect.tsx";
 import { AuthProvider } from "./contexts/AuthContext.tsx";
 import { RequireAuth } from "./components/RequireAuth.tsx";
+import PrimeiroAcesso from "./pages/PrimeiroAcesso.tsx";
 
 const queryClient = new QueryClient();
 
@@ -63,6 +64,7 @@ const App = () => (
             <Route path="/recuperar-senha" element={<RecuperarSenha />} />
             <Route path="/cadastro" element={<Cadastro />} />
             <Route path="/selecionar-conta" element={<RequireAuth><SelecionarConta /></RequireAuth>} />
+            <Route path="/primeiro-acesso" element={<RequireAuth><PrimeiroAcesso /></RequireAuth>} />
 
             <Route element={<RequireAuth><AdminLayout /></RequireAuth>}>
               <Route path="/account/onboarding" element={<ModeGuard required="account"><Onboarding /></ModeGuard>} />
