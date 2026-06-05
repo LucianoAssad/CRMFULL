@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Plus, Pencil, AlertTriangle, Shield, Users as UsersIcon, GitBranch, Lock } from "lucide-react";
 import { VinculosPanel } from "@/components/VinculosPanel";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, api } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -118,10 +118,11 @@ interface FormState {
   conta_id: string;
   role: AcessoRole;
   ativo: boolean;
+  sendEmail: boolean;
 }
 
 const emptyForm: FormState = {
-  nome: "", email: "", telefone: "", conta_id: "", role: "atendente", ativo: true,
+  nome: "", email: "", telefone: "", conta_id: "", role: "atendente", ativo: true, sendEmail: true,
 };
 
 export default function Usuarios() {
@@ -372,20 +373,18 @@ export default function Usuarios() {
         if (!usuarioId) {
           // Gera senha temporária aleatória — usuário deverá redefinir depois
           const senhaTemp = Math.random().toString(36).slice(-10) + "A1!";
-          const { data: novo, error: errIns } = await supabase
-            .from("usuarios")
-            .insert({
-              nome,
-              email,
-              telefone: form.telefone.trim() || null,
-              empresa_id: form.conta_id,
-              password_hash: senhaTemp, // backend irá hashear via trigger ou BCrypt
-              ativo: true,
-            });
-          if (errIns) throw errIns;
-          // O backend retorna a entidade criada diretamente
-          usuarioId = (novo as any)?.id;
-          if (!usuarioId) throw new Error("Falha ao criar usuário: ID não retornado");
+          const endpoint = form.sendEmail ? "/usuarios?sendEmail=true" : "/usuarios";
+          const { data: novo } = await api.post(endpoint, {
+            nome,
+            email,
+            telefone: form.telefone.trim() || null,
+            empresaId: form.conta_id,
+            passwordHash: senhaTemp,
+            ativo: true,
+          });
+          if (!novo?.id) throw new Error("Falha ao criar usuário: ID não retornado");
+          usuarioId = novo.id;
+          if (form.sendEmail) toast.success(`E-mail de boas-vindas enviado para ${email}`);
         }
 
         const { data: dup } = await supabase
@@ -584,6 +583,15 @@ export default function Usuarios() {
                     <Label htmlFor="ativo">Acesso ativo</Label>
                     <Switch id="ativo" checked={form.ativo} onCheckedChange={(v) => setForm({ ...form, ativo: v })} />
                   </div>
+                  {!editing && (
+                    <div className="flex items-center justify-between rounded-md border border-primary/20 bg-primary/5 p-3">
+                      <div>
+                        <Label htmlFor="sendEmail" className="cursor-pointer">✉️ Enviar e-mail de boas-vindas</Label>
+                        <p className="text-xs text-muted-foreground mt-0.5">Envia login e senha temporária para o usuário</p>
+                      </div>
+                      <Switch id="sendEmail" checked={form.sendEmail} onCheckedChange={(v) => setForm({ ...form, sendEmail: v })} />
+                    </div>
+                  )}
                 </div>
                 <DialogFooter>
                   <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>

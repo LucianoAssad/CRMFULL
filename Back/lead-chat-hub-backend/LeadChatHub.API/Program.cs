@@ -77,6 +77,9 @@ builder.Services.AddHttpClient();
 // === Background Workers ===
 builder.Services.AddHostedService<LeadChatHub.API.Workers.MensagemProgramadaWorker>();
 
+// === Email Service (Resend) ===
+builder.Services.AddHttpClient<LeadChatHub.Application.Services.EmailService>();
+
 // === Controllers & SignalR ===
 builder.Services.AddControllers()
     .AddJsonOptions(opts =>
@@ -155,7 +158,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapHub<ChatHub>("/hubs/chat");
-app.MapGet("/health", () => Results.Ok(new { status = "ok", version = "v9-cors-fix" }));
+app.MapGet("/health", () => Results.Ok(new { status = "ok", version = "v10-email" }));
 
 // Auto-migrate on startup (optional, can be disabled in production)
 using (var scope = app.Services.CreateScope())

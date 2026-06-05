@@ -31,7 +31,9 @@ public class EmpresasController : CrudController<Empresa>
 [ApiController, Route("api/usuarios")]
 public class UsuariosController : CrudController<Usuario>
 {
-    public UsuariosController(AppDbContext db) : base(db) { }
+    private readonly LeadChatHub.Application.Services.EmailService _email;
+    public UsuariosController(AppDbContext db, LeadChatHub.Application.Services.EmailService email) : base(db)
+        => _email = email;
 
     [HttpGet("by-email")]
     public async Task<IActionResult> GetByEmail([FromQuery] string email)
@@ -41,17 +43,26 @@ public class UsuariosController : CrudController<Usuario>
     }
 
     /// <summary>
-    /// Override Create to hash password_hash if it looks like a plaintext password.
-    /// Detects bcrypt hashes ($2a$ prefix) and skips hashing if already hashed.
-    /// Also prevents returning the password hash in the response.
+    /// Override Create to hash password, send welcome email if requested.
+    /// Query param: ?sendEmail=true to trigger welcome email.
     /// </summary>
     public override async Task<IActionResult> Create([FromBody] Usuario entity)
     {
+        var senhaPlain = entity.PasswordHash; // save plaintext before hashing
+
         if (!string.IsNullOrWhiteSpace(entity.PasswordHash) && !entity.PasswordHash.StartsWith("$2"))
             entity.PasswordHash = BCrypt.Net.BCrypt.HashPassword(entity.PasswordHash);
         entity.Email = entity.Email?.Trim().ToLower() ?? "";
         Db.Usuarios.Add(entity);
         await Db.SaveChangesAsync();
+
+        // Send welcome email if requested and email service is configured
+        var sendEmail = Request.Query["sendEmail"].ToString() == "true";
+        if (sendEmail && !string.IsNullOrEmpty(entity.Email) && !string.IsNullOrEmpty(senhaPlain))
+        {
+            _ = _email.SendWelcomeEmailAsync(entity.Email, entity.Nome, senhaPlain);
+        }
+
         entity.PasswordHash = null; // never return password hash
         return Created("", entity);
     }
